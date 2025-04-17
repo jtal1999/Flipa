@@ -2,6 +2,8 @@
 
 # dependencies
 node_modules/
+.pnp/
+.pnp.js
 
 # Expo
 .expo/
@@ -36,3 +38,40 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# Testing
+coverage/
+
+# Production
+build/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary files
+*.log
+logs
+*.log.*
+uploads/
+
+# Google Cloud credentials
+google-credentials.json
+
+# Uploads directory (except the directory itself)
+uploads/*
+!uploads/.gitkeep
