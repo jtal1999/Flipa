@@ -5,6 +5,7 @@ const path = require('path');
 const { analyzeImage } = require('./visionAnalysis');
 const { searchProductMetrics } = require('./metricsSearch');
 const axios = require('axios');
+const { getTikTokEngagementMetrics } = require('./tiktokEngagement');
 require('dotenv').config();
 
 const app = express();
@@ -169,12 +170,61 @@ verifyAPIs().then(() => {
             throw new Error(metricsResult.error);
           }
 
+          // Step 3: Get TikTok engagement metrics using Vision labels
+          console.log('\n📱 Getting TikTok engagement metrics using Vision labels...');
+          
+          let tikTokSearchQuery = '';
+          if (analysis.labels && analysis.labels.length > 0) {
+            // Use only the single most relevant label (first one)
+            tikTokSearchQuery = analysis.labels[0].description;
+            console.log('🧪 Using most relevant Vision label for TikTok search:', tikTokSearchQuery);
+          } else {
+            console.warn('⚠️ No labels found by Vision, falling back to text description for TikTok.');
+            // Fallback to the text-based description if no labels
+            tikTokSearchQuery = metricsResult.searchQuery?.replace(/\b(?:aliexpress|amazon)\b/gi, '').trim() || '';
+          }
+          
+          // Call TikTok API with the generated query (bypass distillation)
+          let engagementMetrics;
+          if (!tikTokSearchQuery) {
+            console.warn('⚠️ No valid search query available for TikTok.');
+            engagementMetrics = { success: true, engagement: null };
+          } else {
+            // Pass true to bypass distillation for Vision-based query
+            const bypassDistill = (analysis.labels && analysis.labels.length > 0);
+            engagementMetrics = await getTikTokEngagementMetrics(tikTokSearchQuery, bypassDistill); 
+          }
+
+          if (!engagementMetrics.success) {
+            console.warn('⚠️ Failed to get TikTok engagement metrics:', engagementMetrics.error);
+          }
+
+          // Add detailed logging of engagement metrics
+          console.log('\n📊 TikTok Engagement Metrics Response:');
+          console.log(JSON.stringify(engagementMetrics, null, 2));
+
+          // Prepare the response with safe fallbacks
+          const responseMetrics = {
+            resaleValue: metricsResult.metrics?.resaleValue || {
+              aliExpressAverage: 0,
+              amazonAverage: 0,
+              potentialProfit: 0,
+              profitMargin: 0,
+              confidence: 0
+            },
+            engagement: engagementMetrics.success ? engagementMetrics.engagement : null
+          };
+
+          // Log the final metrics being sent to frontend
+          console.log('\n📤 Final Response Metrics:');
+          console.log(JSON.stringify(responseMetrics, null, 2));
+
           console.log('\n✅ Process completed successfully');
           res.json({
             success: true,
             filePath: req.file.path,
             filename: req.file.filename,
-            metrics: metricsResult.metrics
+            metrics: responseMetrics
           });
         } catch (error) {
           console.error('\n❌ Processing error:', error);
@@ -195,6 +245,36 @@ verifyAPIs().then(() => {
           }
         }
       });
+    });
+
+    app.post('/api/analyze-product', async (req, res) => {
+        try {
+            const { imageUrl, description } = req.body;
+
+            // Get resale metrics
+            const resaleMetrics = await searchProductMetrics(description);
+
+            // Get TikTok engagement metrics
+            const engagementMetrics = await getTikTokEngagementMetrics(description);
+
+            // Combine the results
+            const response = {
+                success: true,
+                description: description,
+                metrics: {
+                    resaleValue: resaleMetrics.success ? resaleMetrics.metrics : null,
+                    engagement: engagementMetrics.success ? engagementMetrics.engagement : null
+                }
+            };
+
+            res.json(response);
+        } catch (error) {
+            console.error('Error analyzing product:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to analyze product'
+            });
+        }
     });
 
     // Basic error handling

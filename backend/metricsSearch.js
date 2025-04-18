@@ -48,7 +48,8 @@ async function searchProductMetrics(productDescription) {
         const metrics = calculateMetrics(aliExpressResults, amazonResults);
         return {
             success: true,
-            metrics: metrics
+            metrics: metrics,
+            searchQuery: mainDescription
         };
     } catch (error) {
         console.error('❌ Search error:', error);

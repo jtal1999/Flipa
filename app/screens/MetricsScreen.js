@@ -1,50 +1,60 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRoute } from '@react-navigation/native';
+import EngagementGraph from '../../components/EngagementGraph';
 
 const MetricsScreen = () => {
     const route = useRoute();
-    const { productData } = route.params;
-    const metrics = productData.metrics;
+    const { productData } = route.params || {};
+    const metrics = productData?.metrics || {};
+    const resaleValue = metrics?.resaleValue || {};
+
+    // Safe number formatting helper
+    const formatNumber = (value, decimals = 2) => {
+        const num = Number(value);
+        return isNaN(num) ? '0.00' : num.toFixed(decimals);
+    };
 
     return (
         <ScrollView style={styles.container}>
-            <View style={styles.section}>
-                <Text style={styles.description}>{productData.description}</Text>
-            </View>
-
-            {metrics?.resaleValue && (
+            {resaleValue && (
                 <View style={styles.section}>
                     <View style={styles.metricRow}>
                         <Text style={styles.metricLabel}>Average Source Price:</Text>
-                        <Text style={styles.metricValue}>${metrics.resaleValue.aliExpressAverage.toFixed(2)}</Text>
+                        <Text style={styles.metricValue}>${formatNumber(resaleValue.aliExpressAverage)}</Text>
                     </View>
 
                     <View style={styles.metricRow}>
                         <Text style={styles.metricLabel}>Average Retail Price:</Text>
-                        <Text style={styles.metricValue}>${metrics.resaleValue.amazonAverage.toFixed(2)}</Text>
+                        <Text style={styles.metricValue}>${formatNumber(resaleValue.amazonAverage)}</Text>
                     </View>
 
                     <View style={styles.metricRow}>
                         <Text style={styles.metricLabel}>Potential Profit:</Text>
                         <Text style={[styles.metricValue, styles.profitText]}>
-                            ${metrics.resaleValue.potentialProfit.toFixed(2)}
+                            ${formatNumber(resaleValue.potentialProfit)}
                         </Text>
                     </View>
 
                     <View style={styles.metricRow}>
                         <Text style={styles.metricLabel}>Profit Margin:</Text>
                         <Text style={[styles.metricValue, styles.profitText]}>
-                            {metrics.resaleValue.profitMargin.toFixed(1)}%
+                            {formatNumber(resaleValue.profitMargin, 1)}%
                         </Text>
                     </View>
 
                     <View style={styles.metricRow}>
                         <Text style={styles.metricLabel}>Confidence Score:</Text>
                         <Text style={styles.metricValue}>
-                            {(metrics.resaleValue.confidence * 100).toFixed(0)}%
+                            {formatNumber(resaleValue.confidence * 100, 0)}%
                         </Text>
                     </View>
+                </View>
+            )}
+
+            {metrics?.engagement && (
+                <View style={styles.section}>
+                    <EngagementGraph engagementData={metrics.engagement} />
                 </View>
             )}
         </ScrollView>
@@ -59,6 +69,12 @@ const styles = StyleSheet.create({
     },
     section: {
         marginBottom: 30,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 15,
+        color: '#333',
     },
     description: {
         fontSize: 16,

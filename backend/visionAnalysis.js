@@ -11,13 +11,31 @@ async function analyzeImage(imagePath) {
     console.log('\n🔍 Starting Google Cloud Vision analysis for image:', imagePath);
     
     const imageBuffer = fs.readFileSync(imagePath);
-    const [result] = await client.textDetection(imageBuffer);
-    const detections = result.textAnnotations;
+    
+    // Perform both text and label detection
+    const [textResult] = await client.textDetection(imageBuffer);
+    const [labelResult] = await client.labelDetection(imageBuffer);
+    
+    const detections = textResult.textAnnotations;
+    const labels = labelResult.labelAnnotations || [];
+
+    // Log label detections
+    if (labels.length > 0) {
+      console.log('\n🏷️ Detected Labels:');
+      console.log('=====================================');
+      labels.forEach(label => {
+        console.log(`${label.description} (confidence: ${(label.score * 100).toFixed(1)}%)`);
+      });
+      console.log('=====================================\n');
+    } else {
+      console.log('No labels detected in the image');
+    }
 
     if (!detections || detections.length === 0) {
       console.log('No text detected in the image');
       return {
-        success: false,
+        success: true,
+        labels: labels,  // Still return labels even if no text
         error: 'No text detected in the image'
       };
     }
@@ -35,7 +53,8 @@ async function analyzeImage(imagePath) {
     return {
       success: true,
       searchDescription: structuredInfo,
-      rawText: fullText
+      rawText: fullText,
+      labels: labels  // Include the detected labels in the response
     };
   } catch (error) {
     console.error('❌ Vision analysis error:', error);

@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { useNavigation } from '@react-navigation/native';
 
-const API_URL = 'https://3f79-70-95-61-15.ngrok-free.app/api/upload';
+const API_URL = 'https://6113-70-95-61-15.ngrok-free.app/api/upload';
 
 const PhotoSubmissionScreen = () => {
   const navigation = useNavigation();
