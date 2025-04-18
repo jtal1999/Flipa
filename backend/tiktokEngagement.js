@@ -87,168 +87,200 @@ function groupPostsByTimeWindow(posts, timeWindow = 'month') {
 
     let groupedData = initializeTimePeriods();
 
-    posts.forEach(post => {
-        // Adjust field names based on the actual response from /user/search/videos
-        const createTime = post.create_time || post.createTime; // Adapt as needed
-        if (!createTime) return; // Skip posts without a timestamp
+    posts.forEach((post, index) => {
+        // Use createTime from item sub-object
+        const createTime = post.item?.createTime;
+        if (!createTime) return; 
 
         const date = new Date(createTime * 1000);
-        let key;
+        if (isNaN(date.getTime())) return; // Skip invalid dates
 
+        let key;
         switch (timeWindow) {
             case 'day':
                 key = date.toISOString().split('T')[0];
                 break;
             case 'week':
                 const weekStart = new Date(date);
-                weekStart.setDate(date.getDate() - date.getDay());
+                weekStart.setDate(date.getDate() - date.getDay()); 
+                weekStart.setHours(0, 0, 0, 0);
                 key = weekStart.toISOString().split('T')[0];
                 break;
             case 'month':
             default:
-                key = date.toISOString().slice(0, 7);
+                key = date.toISOString().slice(0, 7); // YYYY-MM
                 break;
         }
 
-        if (groupedData[key]) {
-             // Adapt field names: e.g., post.stats?.diggCount or post.digg_count
-            groupedData[key].likes += post.digg_count || post.stats?.diggCount || 0;
-            groupedData[key].comments += post.comment_count || post.stats?.commentCount || 0;
-            groupedData[key].shares += post.share_count || post.stats?.shareCount || 0;
-            groupedData[key].postCount += 1;
+        if (groupedData.hasOwnProperty(key)) {
+             // Access stats from item.stats sub-object
+             const stats = post.item?.stats || {};
+             groupedData[key].likes += stats.diggCount ?? 0;
+             groupedData[key].comments += stats.commentCount ?? 0;
+             groupedData[key].shares += stats.shareCount ?? 0;
+             groupedData[key].postCount += 1;
         }
     });
 
-    return Object.entries(groupedData).map(([date, data]) => ({
-        date,
-        likes: Math.round(data.likes / (data.postCount || 1)),
-        comments: Math.round(data.comments / (data.postCount || 1)),
-        shares: Math.round(data.shares / (data.postCount || 1)),
-        totalEngagement: Math.round((data.likes + data.comments + data.shares) / (data.postCount || 1)),
-        postCount: data.postCount
-    })).sort((a, b) => a.date.localeCompare(b.date));
+    // Map to the format expected by the frontend chart
+    return Object.entries(groupedData).map(([dateKey, data]) => {
+        const avgLikes = Math.round(data.likes / (data.postCount || 1));
+        const avgComments = Math.round(data.comments / (data.postCount || 1));
+        const avgShares = Math.round(data.shares / (data.postCount || 1));
+        return {
+            date: dateKey, 
+            likes: avgLikes,
+            comments: avgComments,
+            shares: avgShares,
+            totalEngagement: avgLikes + avgComments + avgShares, 
+            postCount: data.postCount
+        };
+    }).sort((a, b) => a.date.localeCompare(b.date));
 }
 
-// Main function to get metrics
-async function getTikTokEngagementMetrics(searchQuery, bypassDistillation = false) {
+// Helper function to process posts into the final engagement structure
+function _processPosts(posts) {
+    if (!posts || posts.length === 0) {
+        return null; // Return null if no posts to process
+    }
+    
+    const monthlyData = groupPostsByTimeWindow(posts, 'month');
+    const weeklyData = groupPostsByTimeWindow(posts, 'week');
+    const dailyData = groupPostsByTimeWindow(posts, 'day');
+
+    const numPosts = posts.length;
+    // Use correct path for overall stat calculation
+    const totalLikes = posts.reduce((sum, post) => sum + (post.item?.stats?.diggCount ?? 0), 0);
+    const totalComments = posts.reduce((sum, post) => sum + (post.item?.stats?.commentCount ?? 0), 0);
+    const totalShares = posts.reduce((sum, post) => sum + (post.item?.stats?.shareCount ?? 0), 0);
+
+    return {
+        monthly: {
+            posts: monthlyData,
+            averageLikes: numPosts > 0 ? Math.round(totalLikes / numPosts) : 0,
+            averageComments: numPosts > 0 ? Math.round(totalComments / numPosts) : 0,
+            averageShares: numPosts > 0 ? Math.round(totalShares / numPosts) : 0,
+            totalPosts: numPosts
+        },
+        week: {
+            posts: weeklyData,
+            averageLikes: numPosts > 0 ? Math.round(totalLikes / numPosts) : 0,
+            averageComments: numPosts > 0 ? Math.round(totalComments / numPosts) : 0,
+            averageShares: numPosts > 0 ? Math.round(totalShares / numPosts) : 0,
+            totalPosts: numPosts
+        },
+        day: {
+            posts: dailyData,
+            averageLikes: numPosts > 0 ? Math.round(totalLikes / numPosts) : 0,
+            averageComments: numPosts > 0 ? Math.round(totalComments / numPosts) : 0,
+            averageShares: numPosts > 0 ? Math.round(totalShares / numPosts) : 0,
+            totalPosts: numPosts
+        }
+    };
+}
+
+// Renamed function for the hashtag fallback logic
+async function _searchTikTokByHashtag(searchQuery) {
+    console.log('🔄 Falling back to TikTok Hashtag search for:', searchQuery);
     try {
-        let finalQuery = searchQuery;
-        if (!bypassDistillation) {
-            // Only distill if not bypassed
-            finalQuery = distillSearchQuery(searchQuery);
-            console.log('🔍 Distilled TikTok search query for /search:', finalQuery);
-        } else {
-            console.log('🧪 Using raw query (Vision labels) for TikTok search:', finalQuery);
-        }
-
-        if (!finalQuery || finalQuery.length < 3) {
-            console.warn('⚠️ Search query too weak, skipping TikTok API call.');
-            return {
-                success: true,
-                engagement: null
-            };
-        }
-
         // --- Step 1: Get Hashtag ID from Name ---
-        console.log(`[Step 1/2] Fetching Hashtag ID for name: "${finalQuery}"...`);
+        console.log(`[Hashtag Step 1/2] Fetching ID for name: "${searchQuery}"...`);
         let hashtagId;
         try {
             const idResponse = await axios.get('https://api.tikapi.io/public/hashtag', {
                 headers: { 'X-API-KEY': TIKTOK_API_KEY },
-                params: { name: finalQuery }
+                params: { name: searchQuery } // Use raw query for hashtag name
             });
-
             hashtagId = idResponse.data?.challengeInfo?.challenge?.id;
             if (!hashtagId) {
-                console.warn(`⚠️ Hashtag ID not found for name: "${finalQuery}"`);
-                return { success: true, engagement: null };
+                console.warn(`[Hashtag Step 1/2] ⚠️ ID not found for name: "${searchQuery}"`);
+                return { success: true, engagement: null }; // Not an error, just no hashtag
             }
-            console.log(`✅ Found Hashtag ID: ${hashtagId}`);
+            console.log(`[Hashtag Step 1/2] ✅ Found ID: ${hashtagId}`);
         } catch (error) {
-            console.error(`❌ Error fetching Hashtag ID for "${finalQuery}":`, error.response ? JSON.stringify(error.response.data, null, 2) : error.message);
-            // Treat as non-critical if hashtag simply doesn't exist, but return error for other issues
-            if (error.response && error.response.status === 404) { 
-                 return { success: true, engagement: null };
-            } else {
-                 return { success: false, error: `Failed to get Hashtag ID: ${error.message}` };
+            console.error(`[Hashtag Step 1/2] ❌ Error fetching ID for "${searchQuery}":`, error.response ? JSON.stringify(error.response.data, null, 2) : error.message);
+            if (error.response && error.response.status === 404) {
+                 return { success: true, engagement: null }; // Hashtag doesn't exist
             }
+            // Propagate other errors
+            return { success: false, error: `Failed to get Hashtag ID: ${error.message}` };
         }
 
         // --- Step 2: Get Posts using Hashtag ID ---
-        console.log(`[Step 2/2] Fetching posts using Hashtag ID: ${hashtagId}...`);
+        console.log(`[Hashtag Step 2/2] Fetching posts using ID: ${hashtagId}...`);
         const response = await axios.get('https://api.tikapi.io/public/hashtag', {
-            headers: {
-                'X-API-KEY': TIKTOK_API_KEY
-            },
-            params: {
-                id: hashtagId, // Use the retrieved Hashtag ID
-                count: 30      // Adjust count to API limit (max 30 for ID search)
-            }
+            headers: { 'X-API-KEY': TIKTOK_API_KEY },
+            params: { id: hashtagId, count: 30 } // Max 30 for ID search
         });
 
-        // Extract posts using itemList (common for hashtag endpoint)
-        const posts = response.data?.itemList || []; 
-        console.log(`Fetched ${posts.length} posts using Hashtag ID.`);
+        const posts = response.data?.itemList || [];
+        console.log(`[Hashtag Step 2/2] Fetched ${posts.length} posts using ID.`);
 
-        if (!posts.length) {
-             console.log('No posts returned from public hashtag search.');
-            return {
-                success: true,
-                engagement: null // Return null if no posts found
-            };
-        }
-        
-        // Group posts by different time windows
-        const monthlyData = groupPostsByTimeWindow(posts, 'month');
-        const weeklyData = groupPostsByTimeWindow(posts, 'week');
-        const dailyData = groupPostsByTimeWindow(posts, 'day');
-
-        // Calculate overall averages based on fetched posts
-        const numPosts = posts.length;
-        const totalLikes = posts.reduce((sum, post) => sum + (post.digg_count || post.stats?.diggCount || 0), 0);
-        const totalComments = posts.reduce((sum, post) => sum + (post.comment_count || post.stats?.commentCount || 0), 0);
-        const totalShares = posts.reduce((sum, post) => sum + (post.share_count || post.stats?.shareCount || 0), 0);
-
-        // Log the processed data for debugging
-        console.log('Processed engagement data:', {
-            monthly: { posts: monthlyData.length, averages: { likes: totalLikes/numPosts, comments: totalComments/numPosts, shares: totalShares/numPosts } },
-            week: { posts: weeklyData.length },
-            day: { posts: dailyData.length }
-        });
+        const engagementData = _processPosts(posts);
 
         return {
             success: true,
-            engagement: {
-                monthly: {  // Changed from 'month' to 'monthly' to match frontend
-                    posts: monthlyData,
-                    averageLikes: numPosts > 0 ? Math.round(totalLikes / numPosts) : 0,
-                    averageComments: numPosts > 0 ? Math.round(totalComments / numPosts) : 0,
-                    averageShares: numPosts > 0 ? Math.round(totalShares / numPosts) : 0,
-                    totalPosts: numPosts
-                },
-                week: {
-                    posts: weeklyData,
-                    averageLikes: numPosts > 0 ? Math.round(totalLikes / numPosts) : 0,
-                    averageComments: numPosts > 0 ? Math.round(totalComments / numPosts) : 0,
-                    averageShares: numPosts > 0 ? Math.round(totalShares / numPosts) : 0,
-                    totalPosts: numPosts
-                },
-                day: {
-                    posts: dailyData,
-                    averageLikes: numPosts > 0 ? Math.round(totalLikes / numPosts) : 0,
-                    averageComments: numPosts > 0 ? Math.round(totalComments / numPosts) : 0,
-                    averageShares: numPosts > 0 ? Math.round(totalShares / numPosts) : 0,
-                    totalPosts: numPosts
-                }
-            }
+            engagement: engagementData // Will be null if no posts found
         };
+
     } catch (error) {
-        console.error('❌ TikTok engagement error:', error.response ? JSON.stringify(error.response.data, null, 2) : error.message);
-        return {
-            success: false,
-            error: error.message
-        };
+        console.error('❌ TikTok Hashtag Search Error:', error.response ? JSON.stringify(error.response.data, null, 2) : error.message);
+        return { success: false, error: error.message };
     }
+}
+
+// Main function: Tries general search first, falls back to hashtag search
+async function getTikTokEngagementMetrics(searchQuery, bypassDistillation = false) {
+    let finalQuery = searchQuery;
+    if (!bypassDistillation) {
+        finalQuery = distillSearchQuery(searchQuery);
+        console.log('🔍 Distilled TikTok search query:', finalQuery);
+    } else {
+        console.log('🧪 Using raw query for TikTok search:', finalQuery);
+    }
+
+    if (!finalQuery || finalQuery.length < 3) {
+        console.warn('⚠️ Search query too weak, skipping TikTok API call.');
+        return { success: true, engagement: null };
+    }
+
+    try {
+        // --- Primary Method: General Search ---
+        console.log(`[Primary Search] Fetching posts from /public/search/general for query: "${finalQuery}"...`);
+        const response = await axios.get('https://api.tikapi.io/public/search/general', {
+            headers: { 'X-API-KEY': TIKTOK_API_KEY },
+            params: { query: finalQuery, count: 30 } // Use 'query', limit count
+        });
+
+        // Check common response structures for search results
+        const posts = response.data?.data || response.data?.itemList || []; 
+        console.log(`[Primary Search] Fetched ${posts.length} posts.`);
+
+        if (posts.length > 0) {
+            const engagementData = _processPosts(posts);
+            if (engagementData) {
+                console.log('[Primary Search] ✅ Successfully processed general search results.');
+                return { success: true, engagement: engagementData };
+            } else {
+                 console.warn('[Primary Search] ⚠️ Found posts but failed to process them.');
+                 // Proceed to fallback
+            }
+        } else {
+            console.log('[Primary Search] No results found, proceeding to fallback.');
+            // Proceed to fallback
+        }
+
+    } catch (error) {
+        console.error(`[Primary Search] ❌ Error during general search for "${finalQuery}":`, error.response ? JSON.stringify(error.response.data, null, 2) : error.message);
+        console.log('Proceeding to fallback due to error.');
+        // Proceed to fallback on error
+    }
+
+    // --- Fallback Method: Hashtag Search ---
+    // Use the original searchQuery for hashtag search, as distillation might be too aggressive
+    // And respect the bypassDistillation flag for the raw Vision label if needed
+    const hashtagQuery = bypassDistillation ? searchQuery : finalQuery; 
+    return await _searchTikTokByHashtag(hashtagQuery);
 }
 
 module.exports = {
