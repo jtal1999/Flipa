@@ -8,28 +8,53 @@ const EngagementGraph = ({ engagementData }) => {
 
     const getChartData = () => {
         const data = engagementData[timePeriod];
-        if (!data || !data.posts || !data.posts.length) return null;
+        if (!data) return null;
 
-        const posts = data.posts;
+        const posts = data.posts || [];
         
-        // Prepare data for the chart
+        // If no posts for this period, show averages as single data point
+        if (posts.length === 0) {
+            return {
+                labels: [timePeriod === 'month' ? 'April 2025' : 'All Time'],
+                datasets: [
+                    {
+                        data: [data.averageLikes + data.averageComments + data.averageShares],
+                        color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
+                        strokeWidth: 2
+                    },
+                    {
+                        data: [data.averageLikes],
+                        color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
+                        strokeWidth: 2
+                    },
+                    {
+                        data: [data.averageComments],
+                        color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`,
+                        strokeWidth: 2
+                    },
+                    {
+                        data: [data.averageShares],
+                        color: (opacity = 1) => `rgba(255, 165, 0, ${opacity})`,
+                        strokeWidth: 2
+                    }
+                ]
+            };
+        }
+        
+        // Prepare data for the chart with actual posts
         const labels = posts.map(post => {
             const date = new Date(post.date);
-            switch (timePeriod) {
-                case 'day':
-                    return `${date.getHours()}:00`;
-                case 'week':
-                    return `Week of ${date.getMonth() + 1}/${date.getDate()}`;
-                case 'monthly':
-                default:
-                    return `${date.getMonth() + 1}/${date.getFullYear()}`;
-            }
+            return `${date.getMonth() + 1}/${date.getDate()}`;
         });
 
         const likesData = posts.map(post => post.likes);
         const commentsData = posts.map(post => post.comments);
         const sharesData = posts.map(post => post.shares);
         const totalEngagementData = posts.map(post => post.totalEngagement);
+
+        // Find max value for better y-axis scaling
+        const maxValue = Math.max(...totalEngagementData);
+        const yAxisMax = Math.ceil(maxValue * 1.1); // Add 10% padding
 
         return {
             labels,
@@ -54,7 +79,8 @@ const EngagementGraph = ({ engagementData }) => {
                     color: (opacity = 1) => `rgba(255, 165, 0, ${opacity})`,
                     strokeWidth: 2
                 }
-            ]
+            ],
+            yAxisMax
         };
     };
 
@@ -68,25 +94,21 @@ const EngagementGraph = ({ engagementData }) => {
         );
     }
 
+    // Add period indicator
+    const periodText = timePeriod === 'month' ? 'April 2025' : 'All Time';
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.title}>Social Media Engagement</Text>
+                <Text style={styles.subtitle}>{periodText}</Text>
                 <View style={styles.timePeriodSelector}>
                     <TouchableOpacity
-                        style={[styles.timeButton, timePeriod === 'day' && styles.activeButton]}
-                        onPress={() => setTimePeriod('day')}
+                        style={[styles.timeButton, timePeriod === 'month' && styles.activeButton]}
+                        onPress={() => setTimePeriod('month')}
                     >
-                        <Text style={[styles.timeButtonText, timePeriod === 'day' && styles.activeButtonText]}>
-                            Day
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.timeButton, timePeriod === 'week' && styles.activeButton]}
-                        onPress={() => setTimePeriod('week')}
-                    >
-                        <Text style={[styles.timeButtonText, timePeriod === 'week' && styles.activeButtonText]}>
-                            Week
+                        <Text style={[styles.timeButtonText, timePeriod === 'month' && styles.activeButtonText]}>
+                            Month
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -94,7 +116,7 @@ const EngagementGraph = ({ engagementData }) => {
                         onPress={() => setTimePeriod('monthly')}
                     >
                         <Text style={[styles.timeButtonText, timePeriod === 'monthly' && styles.activeButtonText]}>
-                            Month
+                            All Time
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -102,7 +124,7 @@ const EngagementGraph = ({ engagementData }) => {
 
             <LineChart
                 data={chartData}
-                width={screenWidth - 40}
+                width={screenWidth - 32}
                 height={220}
                 chartConfig={{
                     backgroundColor: '#ffffff',
@@ -112,25 +134,23 @@ const EngagementGraph = ({ engagementData }) => {
                     color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                     style: {
                         borderRadius: 16
-                    },
-                    propsForDots: {
-                        r: "4",
-                        strokeWidth: "2"
-                    },
-                    propsForBackgroundLines: {
-                        strokeDasharray: "5,5"
                     }
                 }}
                 bezier
-                style={styles.chart}
-                withDots={true}
-                withInnerLines={true}
+                style={{
+                    marginVertical: 8,
+                    borderRadius: 16
+                }}
+                withDots={false}
+                withShadow={false}
+                withInnerLines={false}
                 withOuterLines={true}
-                withVerticalLines={true}
+                withVerticalLines={false}
                 withHorizontalLines={true}
                 withVerticalLabels={true}
                 withHorizontalLabels={true}
-                yAxisInterval={1}
+                fromZero={true}
+                yAxisInterval={4}
             />
 
             <View style={styles.legend}>
@@ -151,21 +171,6 @@ const EngagementGraph = ({ engagementData }) => {
                     <Text style={styles.legendText}>Shares</Text>
                 </View>
             </View>
-
-            <View style={styles.statsContainer}>
-                <View style={styles.statItem}>
-                    <Text style={styles.statLabel}>Average Likes</Text>
-                    <Text style={styles.statValue}>{engagementData[timePeriod].averageLikes}</Text>
-                </View>
-                <View style={styles.statItem}>
-                    <Text style={styles.statLabel}>Average Comments</Text>
-                    <Text style={styles.statValue}>{engagementData[timePeriod].averageComments}</Text>
-                </View>
-                <View style={styles.statItem}>
-                    <Text style={styles.statLabel}>Average Shares</Text>
-                    <Text style={styles.statValue}>{engagementData[timePeriod].averageShares}</Text>
-                </View>
-            </View>
         </View>
     );
 };
@@ -173,95 +178,93 @@ const EngagementGraph = ({ engagementData }) => {
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#fff',
-        borderRadius: 10,
-        padding: 20,
-        marginVertical: 10,
+        borderRadius: 12,
+        padding: 16,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
             height: 2,
         },
-        shadowOpacity: 0.25,
+        shadowOpacity: 0.1,
         shadowRadius: 3.84,
         elevation: 5,
     },
     header: {
-        marginBottom: 20,
+        marginBottom: 16,
     },
     title: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 10,
+        marginBottom: 4,
+        color: '#333',
+    },
+    subtitle: {
+        fontSize: 16,
+        color: '#666',
+        marginBottom: 16,
     },
     timePeriodSelector: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 10,
+        backgroundColor: '#f5f5f5',
+        borderRadius: 8,
+        padding: 4,
     },
     timeButton: {
-        paddingHorizontal: 15,
-        paddingVertical: 5,
-        borderRadius: 15,
-        backgroundColor: '#f0f0f0',
+        flex: 1,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 6,
     },
     activeButton: {
-        backgroundColor: '#007AFF',
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 1.41,
+        elevation: 2,
     },
     timeButtonText: {
+        textAlign: 'center',
+        fontSize: 14,
         color: '#666',
     },
     activeButtonText: {
-        color: '#fff',
+        color: '#333',
+        fontWeight: '600',
     },
-    chart: {
-        marginVertical: 8,
-        borderRadius: 16,
+    noDataText: {
+        textAlign: 'center',
+        fontSize: 16,
+        color: '#666',
+        marginVertical: 20,
     },
     legend: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-around',
-        marginTop: 10,
+        marginTop: 16,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#f0f0f0',
     },
     legendItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 5,
+        marginRight: 16,
+        marginBottom: 8,
     },
     legendColor: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        marginRight: 5,
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        marginRight: 6,
     },
     legendText: {
         fontSize: 12,
         color: '#666',
-    },
-    noDataText: {
-        textAlign: 'center',
-        color: '#666',
-        marginVertical: 20,
-    },
-    statsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 20,
-        paddingTop: 10,
-        borderTopWidth: 1,
-        borderTopColor: '#eee',
-    },
-    statItem: {
-        alignItems: 'center',
-    },
-    statLabel: {
-        fontSize: 12,
-        color: '#666',
-    },
-    statValue: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#333',
     },
 });
 

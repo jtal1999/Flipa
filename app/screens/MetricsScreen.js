@@ -17,6 +17,11 @@ const MetricsScreen = () => {
 
     return (
         <ScrollView style={styles.container}>
+            <View style={styles.searchTermContainer}>
+                <Text style={styles.searchTermLabel}>Product:</Text>
+                <Text style={styles.searchTerm}>{productData?.description || 'No product description available'}</Text>
+            </View>
+
             {resaleValue && (
                 <View style={styles.section}>
                     <View style={styles.metricRow}>
@@ -65,42 +70,57 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        padding: 20,
+        padding: 16,
     },
-    section: {
-        marginBottom: 30,
+    searchTermContainer: {
+        marginBottom: 24,
     },
-    sectionTitle: {
+    searchTermLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        marginBottom: 8,
+        color: '#666',
+    },
+    searchTerm: {
         fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 15,
+        fontWeight: '500',
         color: '#333',
     },
-    description: {
-        fontSize: 16,
-        color: '#666',
-        lineHeight: 24,
+    section: {
+        marginBottom: 24,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
     metricRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 10,
+        paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#eee',
+        borderBottomColor: '#f0f0f0',
     },
     metricLabel: {
         fontSize: 16,
         color: '#666',
+        flex: 1,
     },
     metricValue: {
-        fontSize: 16,
-        fontWeight: 'bold',
+        fontSize: 18,
+        fontWeight: '600',
         color: '#333',
     },
     profitText: {
-        color: '#4CAF50',
-    }
+        color: '#34C759',
+    },
 });
 
 export default MetricsScreen; 

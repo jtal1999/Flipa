@@ -2,10 +2,10 @@ const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
-const { analyzeImage } = require('./visionAnalysis');
+const { analyzeImage } = require('./gptVisionAnalysis');
 const { searchProductMetrics } = require('./metricsSearch');
 const axios = require('axios');
-const { getTikTokEngagementMetrics } = require('./tiktokEngagement');
+const { getTikTokEngagementMetrics } = require('./tiktokSearch');
 require('dotenv').config();
 
 const app = express();
@@ -38,27 +38,28 @@ async function verifyAPIs() {
         process.exit(1);
     }
 
-    // Check Google Cloud Vision
-    if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-        console.error('❌ GOOGLE_APPLICATION_CREDENTIALS environment variable is not set');
+    // Check GPT API Key
+    if (!process.env.GPT_API_KEY) {
+        console.error('❌ GPT_API_KEY environment variable is not set');
         process.exit(1);
     }
 
     try {
-        // Test Vision API with a simple image
-        console.log('Testing Google Cloud Vision API...');
-        const vision = require('@google-cloud/vision');
-        const client = new vision.ImageAnnotatorClient();
-        
-        // Create a simple test image buffer
-        const testImage = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
-        
-        const [result] = await client.textDetection({
-            image: { content: testImage }
+        // Test GPT API with a simple request
+        console.log('Testing GPT API...');
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: 'gpt-4',
+            messages: [{ role: 'user', content: 'Test' }],
+            max_tokens: 5
+        }, {
+            headers: {
+                'Authorization': `Bearer ${process.env.GPT_API_KEY}`,
+                'Content-Type': 'application/json'
+            }
         });
-        console.log('✅ Google Cloud Vision API connection successful');
+        console.log('✅ GPT API connection successful');
     } catch (error) {
-        console.error('❌ Google Cloud Vision API test failed:', error.message);
+        console.error('❌ GPT API test failed:', error.message);
         process.exit(1);
     }
 }
@@ -153,10 +154,17 @@ verifyAPIs().then(() => {
           console.log('   Size:', req.file.size, 'bytes');
           console.log('   Type:', req.file.mimetype);
           
-          // Step 1: Analyze the image with Google Cloud Vision
-          console.log('\n🔍 Starting Google Cloud Vision analysis...');
+          // Step 1: Analyze the image with GPT-4o Vision
+          console.log('\n🔍 Starting GPT-4o Vision analysis...');
           const analysis = await analyzeImage(req.file.path);
-          console.log('✅ Vision API Response:', JSON.stringify(analysis, null, 2));
+          console.log('✅ GPT-4o Vision Response:', JSON.stringify({
+            success: true,
+            searchTerm: analysis.searchTerm,
+            tiktokSearchTerm: analysis.tiktokSearchTerm,
+            rawText: analysis.exactText,
+            microniche: analysis.microniche,
+            adjacentMicroniche: analysis.adjacentMicroniche
+          }, null, 2));
           
           if (!analysis.success) {
             throw new Error(analysis.error);
@@ -164,66 +172,36 @@ verifyAPIs().then(() => {
 
           // Step 2: Search for metrics using the description
           console.log('\n🔎 Starting metrics search...');
-          const metricsResult = await searchProductMetrics(analysis);
+          const metricsResult = await searchProductMetrics({
+            searchTerm: analysis.searchTerm,
+            tiktokSearchTerm: analysis.tiktokSearchTerm,
+            exactText: analysis.exactText,
+            microniche: analysis.microniche,
+            adjacentMicroniche: analysis.adjacentMicroniche
+          });
 
           if (!metricsResult.success) {
             throw new Error(metricsResult.error);
           }
 
-          // Step 3: Get TikTok engagement metrics using Vision labels
-          console.log('\n📱 Getting TikTok engagement metrics using Vision labels...');
-          
-          let tikTokSearchQuery = '';
-          if (analysis.labels && analysis.labels.length > 0) {
-            // Use only the single most relevant label (first one)
-            tikTokSearchQuery = analysis.labels[0].description;
-            console.log('🧪 Using most relevant Vision label for TikTok search:', tikTokSearchQuery);
-          } else {
-            console.warn('⚠️ No labels found by Vision, falling back to text description for TikTok.');
-            // Fallback to the text-based description if no labels
-            tikTokSearchQuery = metricsResult.searchQuery?.replace(/\b(?:aliexpress|amazon)\b/gi, '').trim() || '';
-          }
-          
-          // Call TikTok API with the generated query (bypass distillation)
-          let engagementMetrics;
-          if (!tikTokSearchQuery) {
-            console.warn('⚠️ No valid search query available for TikTok.');
-            engagementMetrics = { success: true, engagement: null };
-          } else {
-            // Pass true to bypass distillation for Vision-based query
-            const bypassDistill = (analysis.labels && analysis.labels.length > 0);
-            engagementMetrics = await getTikTokEngagementMetrics(tikTokSearchQuery, bypassDistill); 
-          }
+          // Step 3: Get TikTok engagement metrics
+          console.log('\n📱 Getting TikTok engagement metrics...');
+          const engagementMetrics = await getTikTokEngagementMetrics(analysis.tiktokSearchTerm);
 
-          if (!engagementMetrics.success) {
-            console.warn('⚠️ Failed to get TikTok engagement metrics:', engagementMetrics.error);
-          }
-
-          // Add detailed logging of engagement metrics
-          console.log('\n📊 TikTok Engagement Metrics Response:');
-          console.log(JSON.stringify(engagementMetrics, null, 2));
-
-          // Prepare the response with safe fallbacks
+          // Prepare the response
           const responseMetrics = {
-            resaleValue: metricsResult.metrics?.resaleValue || {
-              aliExpressAverage: 0,
-              amazonAverage: 0,
-              potentialProfit: 0,
-              profitMargin: 0,
-              confidence: 0
-            },
-            engagement: engagementMetrics.success ? engagementMetrics.engagement : null
+            resaleValue: metricsResult.metrics.resaleValue,
+            engagement: engagementMetrics.engagement
           };
 
-          // Log the final metrics being sent to frontend
-          console.log('\n📤 Final Response Metrics:');
-          console.log(JSON.stringify(responseMetrics, null, 2));
-
-          console.log('\n✅ Process completed successfully');
+          // Send the complete response
           res.json({
             success: true,
-            filePath: req.file.path,
-            filename: req.file.filename,
+            searchTerm: analysis.searchTerm,
+            tiktokSearchTerm: analysis.tiktokSearchTerm,
+            rawText: analysis.exactText,
+            microniche: analysis.microniche,
+            adjacentMicroniche: analysis.adjacentMicroniche,
             metrics: responseMetrics
           });
         } catch (error) {

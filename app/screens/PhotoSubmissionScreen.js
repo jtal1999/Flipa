@@ -67,6 +67,7 @@ const PhotoSubmissionScreen = () => {
         navigation.navigate('MetricsScreen', {
           productData: {
             imageUrl: data.filePath,
+            description: data.searchTerm,
             metrics: data.metrics
           }
         });
