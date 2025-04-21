@@ -6,7 +6,7 @@ const SERPAPI_KEY = process.env.SERPAPI_KEY;
 
 async function searchProductMetrics(productDescription) {
     try {
-        // Handle if productDescription is an object from GPT-4o
+     
         const searchText = typeof productDescription === 'object' ? 
             productDescription.searchTerm || '' : 
             productDescription;

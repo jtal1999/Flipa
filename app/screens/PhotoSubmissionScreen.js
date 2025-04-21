@@ -61,13 +61,19 @@ const PhotoSubmissionScreen = () => {
       
       console.log('📡 Response status:', response.status);
       const data = await response.json();
-      console.log('📦 Response data:', data);
+      console.log('📦 Response data:', JSON.stringify(data, null, 2));
       
       if (data.success) {
+        console.log('✅ Navigating to MetricsScreen with data:', {
+          imageUrl: data.filePath,
+          description: data.description,
+          metrics: data.metrics
+        });
+        
         navigation.navigate('MetricsScreen', {
           productData: {
             imageUrl: data.filePath,
-            description: data.searchTerm,
+            description: data.description,
             metrics: data.metrics
           }
         });

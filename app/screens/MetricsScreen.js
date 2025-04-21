@@ -2,12 +2,21 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import EngagementGraph from '../../components/EngagementGraph';
+import OrderVolumeDisplay from '../../components/OrderVolumeDisplay';
 
 const MetricsScreen = () => {
     const route = useRoute();
     const { productData } = route.params || {};
     const metrics = productData?.metrics || {};
     const resaleValue = metrics?.resaleValue || {};
+    const orderVolume = metrics?.orderVolume || {};
+    const engagement = metrics?.engagement || {};
+
+    // Debug logs
+    console.log('Product Data:', productData);
+    console.log('Metrics:', metrics);
+    console.log('Engagement Data:', engagement);
+    console.log('Order Volume:', orderVolume);
 
     // Safe number formatting helper
     const formatNumber = (value, decimals = 2) => {
@@ -57,9 +66,15 @@ const MetricsScreen = () => {
                 </View>
             )}
 
-            {metrics?.engagement && (
+            {engagement && Object.keys(engagement).length > 0 && (
                 <View style={styles.section}>
-                    <EngagementGraph engagementData={metrics.engagement} />
+                    <EngagementGraph engagementData={engagement} />
+                </View>
+            )}
+
+            {orderVolume && Object.keys(orderVolume).length > 0 && (
+                <View style={styles.section}>
+                    <OrderVolumeDisplay orderVolumeData={orderVolume} />
                 </View>
             )}
         </ScrollView>

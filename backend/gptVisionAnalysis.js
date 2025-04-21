@@ -25,7 +25,7 @@ async function analyzeImage(imagePath) {
                     '1. Extract the exact text visible in the image\n' +
                     '2. Based on the text and visual analysis, provide two search terms:\n' +
                     '   - Provide a smart search term that captures what the product actually is. This should be a concise, clear description that would work well for both product searches and social media engagement analysis.\n' +
-                    '   - A condensed search term for TikTok (3 words max, space separated, no hashtags or hyphens,focusing on the core product identity)\n' +
+                    '   - A condensed search term for TikTok which says the exact product name (3 words max, space separated, no hashtags or hyphens,focusing on the core product identity), and adds the word "products" to the end of the search term\n' +
                     '3. Identify the category this product belongs to (be specific, e.g., "Cordless Garden Tools" not just "Garden Tools")\n' +
                     '4. Identify an adjacent niche category that would be relevant for cross-selling\n\n' +
                     'Format the response as a JSON object with these keys: exactText, searchTerm, tiktokSearchTerm, microniche, adjacentMicroniche'

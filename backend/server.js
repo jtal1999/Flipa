@@ -6,6 +6,7 @@ const { analyzeImage } = require('./gptVisionAnalysis');
 const { searchProductMetrics } = require('./metricsSearch');
 const axios = require('axios');
 const { getTikTokEngagementMetrics } = require('./tiktokSearch');
+const { getOrderVolume } = require('./aliexpressScraper');
 require('dotenv').config();
 
 const app = express();
@@ -60,6 +61,23 @@ async function verifyAPIs() {
         console.log('✅ GPT API connection successful');
     } catch (error) {
         console.error('❌ GPT API test failed:', error.message);
+        process.exit(1);
+    }
+
+    // Check Apify API Token
+    if (!process.env.APIFY_API_TOKEN) {
+        console.error('❌ APIFY_API_TOKEN environment variable is not set');
+        process.exit(1);
+    }
+
+    try {
+        // Test Apify API with a simple request
+        console.log('Testing Apify API...');
+        const actorId = 'piotrv1001~aliexpress-listings-scraper';
+        const response = await axios.get(`https://api.apify.com/v2/acts/${actorId}?token=${process.env.APIFY_API_TOKEN}`);
+        console.log('✅ Apify API connection successful');
+    } catch (error) {
+        console.error('❌ Apify API test failed:', error.message);
         process.exit(1);
     }
 }
@@ -188,18 +206,29 @@ verifyAPIs().then(() => {
           console.log('\n📱 Getting TikTok engagement metrics...');
           const engagementMetrics = await getTikTokEngagementMetrics(analysis.tiktokSearchTerm);
 
+          // Step 4: Get AliExpress order volume metrics
+          console.log('\n🛍️ Getting AliExpress order volume metrics...');
+          let orderVolumeMetrics = null;
+          try {
+            orderVolumeMetrics = await getOrderVolume(analysis.searchTerm);
+            console.log('✅ Successfully retrieved order volume metrics');
+          } catch (error) {
+            console.error('❌ Failed to get order volume metrics:', error.message);
+            // Don't throw error, continue with other metrics
+          }
+
           // Prepare the response
           const responseMetrics = {
             resaleValue: metricsResult.metrics.resaleValue,
-            engagement: engagementMetrics.engagement
+            engagement: engagementMetrics.engagement,
+            orderVolume: orderVolumeMetrics
           };
 
           // Send the complete response
           res.json({
             success: true,
-            searchTerm: analysis.searchTerm,
+            description: analysis.searchTerm,
             tiktokSearchTerm: analysis.tiktokSearchTerm,
-            rawText: analysis.exactText,
             microniche: analysis.microniche,
             adjacentMicroniche: analysis.adjacentMicroniche,
             metrics: responseMetrics
@@ -235,16 +264,29 @@ verifyAPIs().then(() => {
             // Get TikTok engagement metrics
             const engagementMetrics = await getTikTokEngagementMetrics(description);
 
+            // Get AliExpress order volume metrics
+            console.log('\n🛍️ Getting AliExpress order volume metrics...');
+            let orderVolumeMetrics = null;
+            try {
+                orderVolumeMetrics = await getOrderVolume(description);
+                console.log('✅ Successfully retrieved order volume metrics');
+            } catch (error) {
+                console.error('❌ Failed to get order volume metrics:', error.message);
+                // Don't throw error, continue with other metrics
+            }
+
             // Combine the results
             const response = {
                 success: true,
                 description: description,
                 metrics: {
                     resaleValue: resaleMetrics.success ? resaleMetrics.metrics : null,
-                    engagement: engagementMetrics.success ? engagementMetrics.engagement : null
+                    engagement: engagementMetrics.success ? engagementMetrics.engagement : null,
+                    orderVolume: orderVolumeMetrics
                 }
             };
 
+            console.log('Sending response:', JSON.stringify(response, null, 2));
             res.json(response);
         } catch (error) {
             console.error('Error analyzing product:', error);
@@ -253,6 +295,22 @@ verifyAPIs().then(() => {
                 error: 'Failed to analyze product'
             });
         }
+    });
+
+    // Add this new endpoint
+    app.get('/api/order-volume', async (req, res) => {
+      try {
+        const { searchTerm } = req.query;
+        if (!searchTerm) {
+          return res.status(400).json({ error: 'Search term is required' });
+        }
+
+        const orderVolumeData = await getOrderVolume(searchTerm);
+        res.json(orderVolumeData);
+      } catch (error) {
+        console.error('Error in order volume endpoint:', error);
+        res.status(500).json({ error: 'Failed to fetch order volume data' });
+      }
     });
 
     // Basic error handling
