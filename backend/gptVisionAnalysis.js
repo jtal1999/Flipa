@@ -24,10 +24,8 @@ async function analyzeImage(imagePath) {
               text: 'You are a product analysis expert. Analyze this product image and provide the following information in JSON format:\n' +
                     '1. Extract the exact text visible in the image\n' +
                     '2. Based on the text and visual analysis, provide two search terms:\n' +
-                    '   - Provide a smart search term that captures what the product actually is. This should be a concise, clear description that would work well for both product searches and social media engagement analysis.\n' +
-                    '   - A condensed search term for TikTok which says the exact product name (3 words max, space separated, no hashtags or hyphens,focusing on the core product identity), and adds the word "products" to the end of the search term\n' +
-                    '3. Identify the category this product belongs to (be specific, e.g., "Cordless Garden Tools" not just "Garden Tools")\n' +
-                    '4. Identify an adjacent niche category that would be relevant for cross-selling\n\n' +
+                    '   - The *exact product label or name* as written in the image (or packaging), reworded *only if necessary* to match what TikTok creators would likely use in captions or hashtags — no hyphens, no hashtags, just the keyword phrase. For example: "led eyelash curler", "usb heating lunchbox", "waterproof couch cover". This should be lowercase, concise, and match real-world TikTok phrasing.\n' +
+                    '   - The *exact product label or name* as written in the image (or packaging), reworded *only if necessary* to match what TikTok creators would likely use in captions or hashtags — no hyphens, no hashtags, just the keyword phrase. For example: "led eyelash curler", "usb heating lunchbox", "waterproof couch cover". This should be lowercase, concise, and match real-world TikTok phrasing.\n' +
                     'Format the response as a JSON object with these keys: exactText, searchTerm, tiktokSearchTerm, microniche, adjacentMicroniche'
             },
             {
@@ -62,17 +60,13 @@ async function analyzeImage(imagePath) {
     console.log('Exact Text:', analysis.exactText);
     console.log('Search Term:', analysis.searchTerm);
     console.log('TikTok Search Term:', analysis.tiktokSearchTerm);
-    console.log('Microniche:', analysis.microniche);
-    console.log('Adjacent Microniche:', analysis.adjacentMicroniche);
     console.log('=====================================\n');
 
     return {
       success: true,
       searchTerm: analysis.searchTerm,  // For resale metrics
       tiktokSearchTerm: analysis.tiktokSearchTerm,     // For TikTok
-      rawText: analysis.exactText,
-      microniche: analysis.microniche,
-      adjacentMicroniche: analysis.adjacentMicroniche
+      rawText: analysis.exactText
     };
   } catch (error) {
     console.error('❌ GPT Vision analysis error:', error);

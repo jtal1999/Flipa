@@ -1,88 +1,84 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, Dimensions, PanResponder } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
 const EngagementGraph = ({ engagementData }) => {
-    const [timePeriod, setTimePeriod] = useState('monthly');
+    const [selectedPoint, setSelectedPoint] = useState(null);
+    const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
     const screenWidth = Dimensions.get('window').width;
+    const chartWidth = screenWidth - 48; // Increased padding for better centering
+    const chartRef = useRef(null);
 
     const getChartData = () => {
-        const data = engagementData[timePeriod];
+        const data = engagementData.monthly;
         if (!data) return null;
 
         const posts = data.posts || [];
         
-        // If no posts for this period, show averages as single data point
-        if (posts.length === 0) {
-            return {
-                labels: [timePeriod === 'month' ? 'April 2025' : 'All Time'],
-                datasets: [
-                    {
-                        data: [data.averageLikes + data.averageComments + data.averageShares],
-                        color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
-                        strokeWidth: 2
-                    },
-                    {
-                        data: [data.averageLikes],
-                        color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
-                        strokeWidth: 2
-                    },
-                    {
-                        data: [data.averageComments],
-                        color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`,
-                        strokeWidth: 2
-                    },
-                    {
-                        data: [data.averageShares],
-                        color: (opacity = 1) => `rgba(255, 165, 0, ${opacity})`,
-                        strokeWidth: 2
-                    }
-                ]
-            };
-        }
-        
-        // Prepare data for the chart with actual posts
-        const labels = posts.map(post => {
-            const date = new Date(post.date);
-            return `${date.getMonth() + 1}/${date.getDate()}`;
-        });
+        if (posts.length === 0) return null;
 
-        const likesData = posts.map(post => post.likes);
-        const commentsData = posts.map(post => post.comments);
-        const sharesData = posts.map(post => post.shares);
-        const totalEngagementData = posts.map(post => post.totalEngagement);
+        // Find max and min values for scaling
+        const maxValue = Math.max(...posts.map(post => post.totalEngagement));
+        const minValue = Math.min(...posts.map(post => post.totalEngagement));
 
-        // Find max value for better y-axis scaling
-        const maxValue = Math.max(...totalEngagementData);
-        const yAxisMax = Math.ceil(maxValue * 1.1); // Add 10% padding
+        // Convert to logarithmic scale (0-100)
+        const scaleValue = (value) => {
+            if (value === 0) return 0;
+            const logValue = Math.log10(value);
+            const logMax = Math.log10(maxValue);
+            const logMin = Math.log10(minValue);
+            const scaled = ((logValue - logMin) / (logMax - logMin)) * 100;
+            return Math.round(scaled);
+        };
+
+        // Prepare data for the chart
+        const labels = posts.map(() => ''); // Empty labels to remove dates
+        const scaledData = posts.map(post => scaleValue(post.totalEngagement));
 
         return {
             labels,
             datasets: [
                 {
-                    data: totalEngagementData,
-                    color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
-                    strokeWidth: 2
-                },
-                {
-                    data: likesData,
-                    color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
-                    strokeWidth: 2
-                },
-                {
-                    data: commentsData,
-                    color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`,
-                    strokeWidth: 2
-                },
-                {
-                    data: sharesData,
-                    color: (opacity = 1) => `rgba(255, 165, 0, ${opacity})`,
+                    data: scaledData,
+                    color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
                     strokeWidth: 2
                 }
-            ],
-            yAxisMax
+            ]
         };
     };
+
+    const panResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: () => true,
+            onPanResponderMove: (event, gestureState) => {
+                const { moveX } = gestureState;
+                const chartX = moveX - 24; // Adjusted for new padding
+                
+                if (chartX >= 0 && chartX <= chartWidth) {
+                    const data = engagementData.monthly.posts;
+                    const index = Math.round((chartX / chartWidth) * (data.length - 1));
+                    const post = data[index];
+                    
+                    setSelectedPoint({
+                        date: post.date,
+                        likes: post.likes,
+                        comments: post.comments,
+                        shares: post.shares,
+                        totalEngagement: post.totalEngagement
+                    });
+                    
+                    setTooltipPosition({
+                        x: moveX,
+                        y: 0 // Position at the top of the chart
+                    });
+                }
+            },
+            onPanResponderRelease: () => {
+                // Keep the last selected point visible
+            }
+        })
+    ).current;
 
     const chartData = getChartData();
 
@@ -94,37 +90,18 @@ const EngagementGraph = ({ engagementData }) => {
         );
     }
 
-    // Add period indicator
-    const periodText = timePeriod === 'month' ? 'April 2025' : 'All Time';
-
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.title}>Social Media Engagement</Text>
-                <Text style={styles.subtitle}>{periodText}</Text>
-                <View style={styles.timePeriodSelector}>
-                    <TouchableOpacity
-                        style={[styles.timeButton, timePeriod === 'month' && styles.activeButton]}
-                        onPress={() => setTimePeriod('month')}
-                    >
-                        <Text style={[styles.timeButtonText, timePeriod === 'month' && styles.activeButtonText]}>
-                            Month
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.timeButton, timePeriod === 'monthly' && styles.activeButton]}
-                        onPress={() => setTimePeriod('monthly')}
-                    >
-                        <Text style={[styles.timeButtonText, timePeriod === 'monthly' && styles.activeButtonText]}>
-                            All Time
-                        </Text>
-                    </TouchableOpacity>
-                </View>
+                <Text style={styles.title}>Engagement</Text>
             </View>
 
+            <View style={styles.chartWrapper}>
+                <View {...panResponder.panHandlers} style={styles.chartContainer}>
             <LineChart
+                        ref={chartRef}
                 data={chartData}
-                width={screenWidth - 32}
+                        width={chartWidth}
                 height={220}
                 chartConfig={{
                     backgroundColor: '#ffffff',
@@ -132,6 +109,7 @@ const EngagementGraph = ({ engagementData }) => {
                     backgroundGradientTo: '#ffffff',
                     decimalPlaces: 0,
                     color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                     style: {
                         borderRadius: 16
                     }
@@ -139,36 +117,58 @@ const EngagementGraph = ({ engagementData }) => {
                 bezier
                 style={{
                     marginVertical: 8,
-                    borderRadius: 16
+                            borderRadius: 16,
+                            paddingRight: 20
                 }}
-                withDots={false}
+                        withDots={true}
                 withShadow={false}
-                withInnerLines={false}
+                        withInnerLines={true}
                 withOuterLines={true}
                 withVerticalLines={false}
                 withHorizontalLines={true}
                 withVerticalLabels={true}
-                withHorizontalLabels={true}
+                        withHorizontalLabels={false}
                 fromZero={true}
-                yAxisInterval={4}
-            />
+                        yAxisInterval={20}
+                        segments={5}
+                        formatYLabel={(value) => Math.round(value).toString()}
+                        yLabelsOffset={10}
+                    />
+                    {selectedPoint && (
+                        <View 
+                            style={[
+                                styles.verticalLine,
+                                {
+                                    left: tooltipPosition.x - 24, // Adjusted for new padding
+                                }
+                            ]}
+                        />
+                    )}
+                </View>
+                </View>
+
+            {selectedPoint && (
+                <View 
+                    style={[
+                        styles.tooltip,
+                        {
+                            position: 'absolute',
+                            left: tooltipPosition.x - 75, // Center the tooltip
+                            top: tooltipPosition.y
+                        }
+                    ]}
+                >
+                    <Text style={styles.tooltipText}>Date: {selectedPoint.date}</Text>
+                    <Text style={styles.tooltipText}>Likes: {selectedPoint.likes}</Text>
+                    <Text style={styles.tooltipText}>Comments: {selectedPoint.comments}</Text>
+                    <Text style={styles.tooltipText}>Shares: {selectedPoint.shares}</Text>
+                </View>
+            )}
 
             <View style={styles.legend}>
                 <View style={styles.legendItem}>
-                    <View style={[styles.legendColor, { backgroundColor: 'red' }]} />
-                    <Text style={styles.legendText}>Total Engagement</Text>
-                </View>
-                <View style={styles.legendItem}>
-                    <View style={[styles.legendColor, { backgroundColor: 'green' }]} />
-                    <Text style={styles.legendText}>Likes</Text>
-                </View>
-                <View style={styles.legendItem}>
-                    <View style={[styles.legendColor, { backgroundColor: 'blue' }]} />
-                    <Text style={styles.legendText}>Comments</Text>
-                </View>
-                <View style={styles.legendItem}>
-                    <View style={[styles.legendColor, { backgroundColor: 'orange' }]} />
-                    <Text style={styles.legendText}>Shares</Text>
+                    <View style={[styles.legendColor, { backgroundColor: '#007AFF' }]} />
+                    <Text style={styles.legendText}>Engagement Score (0-100)</Text>
                 </View>
             </View>
         </View>
@@ -198,43 +198,6 @@ const styles = StyleSheet.create({
         marginBottom: 4,
         color: '#333',
     },
-    subtitle: {
-        fontSize: 16,
-        color: '#666',
-        marginBottom: 16,
-    },
-    timePeriodSelector: {
-        flexDirection: 'row',
-        backgroundColor: '#f5f5f5',
-        borderRadius: 8,
-        padding: 4,
-    },
-    timeButton: {
-        flex: 1,
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 6,
-    },
-    activeButton: {
-        backgroundColor: '#fff',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
-        shadowOpacity: 0.2,
-        shadowRadius: 1.41,
-        elevation: 2,
-    },
-    timeButtonText: {
-        textAlign: 'center',
-        fontSize: 14,
-        color: '#666',
-    },
-    activeButtonText: {
-        color: '#333',
-        fontWeight: '600',
-    },
     noDataText: {
         textAlign: 'center',
         fontSize: 16,
@@ -243,8 +206,7 @@ const styles = StyleSheet.create({
     },
     legend: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-around',
+        justifyContent: 'center',
         marginTop: 16,
         paddingTop: 16,
         borderTopWidth: 1,
@@ -253,8 +215,6 @@ const styles = StyleSheet.create({
     legendItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginRight: 16,
-        marginBottom: 8,
     },
     legendColor: {
         width: 12,
@@ -265,6 +225,38 @@ const styles = StyleSheet.create({
     legendText: {
         fontSize: 12,
         color: '#666',
+    },
+    tooltip: {
+        backgroundColor: 'rgba(248, 248, 248, 0.8)',
+        padding: 8,
+        borderRadius: 8,
+        width: 150,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    tooltipText: {
+        fontSize: 10,
+        color: '#333',
+        marginBottom: 2,
+    },
+    chartWrapper: {
+        alignItems: 'center',
+    },
+    chartContainer: {
+        position: 'relative',
+    },
+    verticalLine: {
+        position: 'absolute',
+        width: 2,
+        height: 220,
+        backgroundColor: '#007AFF',
+        opacity: 0.5,
     },
 });
 

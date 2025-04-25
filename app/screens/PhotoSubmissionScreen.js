@@ -89,39 +89,60 @@ const PhotoSubmissionScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Upload Product Screenshot</Text>
-      <TouchableOpacity style={styles.button} onPress={pickImage}>
-        <Text style={styles.buttonText}>Select Photo</Text>
-      </TouchableOpacity>
-      
-      {selectedImage && (
-        <View style={styles.imageContainer}>
-          <Image source={{ uri: selectedImage }} style={styles.image} />
-          <TouchableOpacity 
-            style={[styles.analyzeButton, uploading && styles.disabledButton]}
-            onPress={uploadImage}
-            disabled={uploading}
-          >
-            {uploading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.buttonText}>Analyze Product</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      )}
+    <View style={styles.mainContainer}>
+      <View style={styles.contentContainer}>
+        <Text style={styles.title}>Upload Product Screenshot</Text>
+        <TouchableOpacity style={styles.button} onPress={pickImage}>
+          <Text style={styles.buttonText}>Select Photo</Text>
+        </TouchableOpacity>
+        
+        {selectedImage && (
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: selectedImage }} style={styles.image} />
+            <TouchableOpacity 
+              style={[styles.analyzeButton, uploading && styles.disabledButton]}
+              onPress={uploadImage}
+              disabled={uploading}
+            >
+              {uploading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.buttonText}>Analyze Product</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity 
+          style={styles.button}
+          onPress={() => navigation.navigate('SavedSearches')}
+        >
+          <Text style={styles.buttonText}>Saved</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.button}
+          onPress={() => navigation.navigate('Trending')}
+        >
+          <Text style={styles.buttonText}>Trending</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  contentContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5',
   },
   title: {
     fontSize: 24,
@@ -150,12 +171,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   analyzeButton: {
-    backgroundColor: '#34C759',
+    backgroundColor: '#007AFF',
     padding: 15,
     borderRadius: 10,
   },
   disabledButton: {
     backgroundColor: '#999',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    backgroundColor: '#fff',
   },
 });
 

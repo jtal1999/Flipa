@@ -9,16 +9,7 @@ const OrderVolumeDisplay = ({ orderVolumeData }) => {
   }
 
   const getVolumeColor = (level) => {
-    switch (level) {
-      case 'high':
-        return '#34C759'; // Green to match profitText color
-      case 'medium':
-        return '#FFC107'; // Yellow
-      case 'low':
-        return '#FF3B30'; // Red to match iOS design
-      default:
-        return '#8E8E93'; // Gray to match iOS design
-    }
+    return '#007AFF'; // Use the same blue color as the graph for all levels
   };
 
   return (
@@ -73,7 +64,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
@@ -82,11 +73,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#333',
+    flex: 1,
+    marginRight: 16,
   },
   volumeIndicator: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 16,
+    minWidth: 80,
+    alignItems: 'center',
   },
   volumeText: {
     color: 'white',
@@ -113,6 +108,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#333',
+    marginLeft: 16,
   },
 });
 

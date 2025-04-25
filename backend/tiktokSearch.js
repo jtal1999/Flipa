@@ -17,7 +17,7 @@ async function getTikTokEngagementMetrics(searchTerm, isFallback = false) {
         let cursor = '';
         let hasMore = true;
         let page = 0;
-        const maxPages = 50; // Increased from 5 to 50 pages (1500 posts max)
+        const maxPages = 3; // Changed from 50 to 3 pages (90 posts max)
         const postsPerPage = 30;
         const maxPosts = 2000; // TikAPI limit
 
@@ -133,7 +133,7 @@ function calculateEngagementMetrics(posts) {
 
     console.log(`Filtered to ${filteredPosts.length} posts from January 2024 onwards`);
 
-    // Calculate averages from filtered posts
+    // Calculate overall averages from filtered posts
     const totalLikes = filteredPosts.reduce((sum, post) => sum + (post.item?.stats?.diggCount || 0), 0);
     const totalComments = filteredPosts.reduce((sum, post) => sum + (post.item?.stats?.commentCount || 0), 0);
     const totalShares = filteredPosts.reduce((sum, post) => sum + (post.item?.stats?.shareCount || 0), 0);
@@ -173,25 +173,36 @@ function calculateEngagementMetrics(posts) {
             return isIncluded;
         });
         
+        // Calculate averages for current month only
+        const monthTotalLikes = monthPosts.reduce((sum, post) => sum + post.likes, 0);
+        const monthTotalComments = monthPosts.reduce((sum, post) => sum + post.comments, 0);
+        const monthTotalShares = monthPosts.reduce((sum, post) => sum + post.shares, 0);
+        
+        const monthAverageLikes = monthPosts.length > 0 ? monthTotalLikes / monthPosts.length : 0;
+        const monthAverageComments = monthPosts.length > 0 ? monthTotalComments / monthPosts.length : 0;
+        const monthAverageShares = monthPosts.length > 0 ? monthTotalShares / monthPosts.length : 0;
+        
         console.log(`Found ${monthPosts.length} posts for current month`);
-        return monthPosts;
+        return {
+            posts: monthPosts,
+            averageLikes: monthAverageLikes,
+            averageComments: monthAverageComments,
+            averageShares: monthAverageShares,
+            totalPosts: monthPosts.length
+        };
     };
+
+    const currentMonthData = getCurrentMonthPosts(formattedPosts);
 
     return {
         monthly: {
-            posts: formattedPosts, // All posts from 2024 onwards
+            posts: formattedPosts,
             averageLikes,
             averageComments,
             averageShares,
             totalPosts: filteredPosts.length
         },
-        month: {
-            posts: getCurrentMonthPosts(formattedPosts), // Current month (April 2025)
-            averageLikes,
-            averageComments,
-            averageShares,
-            totalPosts: filteredPosts.length
-        }
+        month: currentMonthData
     };
 }
 
