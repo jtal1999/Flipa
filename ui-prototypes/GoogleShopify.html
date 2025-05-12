@@ -610,7 +610,7 @@
             display: block;
             width: 50%;
             float: left;
-            background: linear-gradient(145deg, rgba(44,46,54,0.48), rgba(28,29,34,0.28)), url('data:image/svg+xml;utf8,<svg width="100%25" height="100%25" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="30" r="1.2" fill="white" opacity="0.13"/><circle cx="80" cy="60" r="0.8" fill="white" opacity="0.10"/><circle cx="160" cy="120" r="1.1" fill="white" opacity="0.10"/><circle cx="300" cy="40" r="1.3" fill="white" opacity="0.13"/><circle cx="350" cy="180" r="0.7" fill="white" opacity="0.09"/></svg>');
+            background: linear-gradient(145deg, rgba(44,46,54,0.48), rgba(28,29,34,0.28));
             background-size: cover;
             padding: 8px;
             box-sizing: border-box;
@@ -671,15 +671,13 @@
             border-radius: 8px;
             margin-bottom: 8px;
             box-shadow:
-                0 0 16px 2px rgba(10,132,255,0.18),
                 0 4px 18px 0 rgba(0,0,0,0.13),
                 0 1.5px 6px 0 rgba(0,0,0,0.10),
-                inset 0 1.5px 18px 0 rgba(255,255,255,0.10),
-                inset 0 0 24px 0 rgba(10,132,255,0.08);
+                inset 0 1.5px 18px 0 rgba(255,255,255,0.10);
             backdrop-filter: blur(14px);
             overflow: hidden;
             height: 150px;
-            background: linear-gradient(145deg, rgba(44,46,54,0.48), rgba(28,29,34,0.28)), url('data:image/svg+xml;utf8,<svg width="100%25" height="100%25" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="30" r="1.2" fill="white" opacity="0.13"/><circle cx="80" cy="60" r="0.8" fill="white" opacity="0.10"/><circle cx="160" cy="120" r="1.1" fill="white" opacity="0.10"/><circle cx="300" cy="40" r="1.3" fill="white" opacity="0.13"/><circle cx="350" cy="180" r="0.7" fill="white" opacity="0.09"/></svg>');
+            background: linear-gradient(145deg, rgba(44,46,54,0.48), rgba(28,29,34,0.28));
             background-size: cover;
             padding: 16px;
             border: none;
@@ -966,7 +964,7 @@
                 <div style="position: absolute; left: 0; top: 0; width: 100%; height: 10px; pointer-events: none; z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 50%);"></div>
                 <div style="position: absolute; left: 0; top: 0; width: 10px; height: 100%; pointer-events: none; z-index: 10; background: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 50%);"></div>
                 <div style="position: absolute; right: 0; top: 0; width: 10px; height: 100%; pointer-events: none; z-index: 10; background: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 50%);"></div>
-                <div class="graph-label" style="color: #fff;">Google Result popularity</div>
+                <div class="graph-label" style="color: #fff;">Google Result Popularity</div>
                 <svg viewBox="0 0 390 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="width: 100%; height: 100%; display: block;">
                     <!-- Subtle grid lines -->
                     <g stroke="#ccc" stroke-width="1" opacity="0.32">
@@ -979,18 +977,57 @@
                     <!-- Modern bar graph -->
                     <defs>
                         <linearGradient id="barBlue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#0A84FF" stop-opacity="0.85"/>
-                            <stop offset="100%" stop-color="#fff" stop-opacity="0.65"/>
+                            <stop offset="0%" stop-color="#0A84FF" stop-opacity="0.92"/>
+                            <stop offset="50%" stop-color="#0A84FF" stop-opacity="0.78"/>
+                            <stop offset="100%" stop-color="#0A84FF" stop-opacity="0.65"/>
                         </linearGradient>
+                        <filter id="barGlow">
+                            <feGaussianBlur stdDeviation="0.3" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
                     </defs>
                     <g>
-                        <rect x="0" y="80" width="51.1" height="120" rx="7" fill="url(#barBlue)" class="bar-animate" style="animation-delay:0.05s;" />
-                        <rect x="55.1" y="40" width="51.1" height="160" rx="7" fill="url(#barBlue)" class="bar-animate" style="animation-delay:0.15s;" />
-                        <rect x="110.2" y="100" width="51.1" height="100" rx="7" fill="url(#barBlue)" class="bar-animate" style="animation-delay:0.25s;" />
-                        <rect x="165.3" y="60" width="51.1" height="140" rx="7" fill="url(#barBlue)" class="bar-animate" style="animation-delay:0.35s;" />
-                        <rect x="220.4" y="120" width="51.1" height="80" rx="7" fill="url(#barBlue)" class="bar-animate" style="animation-delay:0.45s;" />
-                        <rect x="275.5" y="90" width="51.1" height="110" rx="7" fill="url(#barBlue)" class="bar-animate" style="animation-delay:0.55s;" />
-                        <rect x="330.6" y="50" width="51.1" height="150" rx="7" fill="url(#barBlue)" class="bar-animate" style="animation-delay:0.65s;" />
+                        <rect x="8" y="80" width="8" height="120" rx="0.2" fill="url(#barBlue)" filter="url(#barGlow)" class="bar-animate" style="animation-delay:0.05s;" />
+                        <text x="18" y="200" transform="rotate(90 18 200)" fill="#fff" font-size="7.5" font-family="Inter, sans-serif" opacity="0.95" text-anchor="end" font-weight="500">Amazon</text>
+                        
+                        <rect x="38" y="40" width="8" height="160" rx="0.2" fill="url(#barBlue)" filter="url(#barGlow)" class="bar-animate" style="animation-delay:0.15s;" />
+                        <text x="48" y="200" transform="rotate(90 48 200)" fill="#fff" font-size="7.5" font-family="Inter, sans-serif" opacity="0.95" text-anchor="end" font-weight="500">Shopify</text>
+                        
+                        <rect x="68" y="100" width="8" height="100" rx="0.2" fill="url(#barBlue)" filter="url(#barGlow)" class="bar-animate" style="animation-delay:0.25s;" />
+                        <text x="78" y="200" transform="rotate(90 78 200)" fill="#fff" font-size="7.5" font-family="Inter, sans-serif" opacity="0.95" text-anchor="end" font-weight="500">Etsy</text>
+                        
+                        <rect x="98" y="60" width="8" height="140" rx="0.2" fill="url(#barBlue)" filter="url(#barGlow)" class="bar-animate" style="animation-delay:0.35s;" />
+                        <text x="108" y="200" transform="rotate(90 108 200)" fill="#fff" font-size="7.5" font-family="Inter, sans-serif" opacity="0.95" text-anchor="end" font-weight="500">Walmart</text>
+                        
+                        <rect x="128" y="120" width="8" height="80" rx="0.2" fill="url(#barBlue)" filter="url(#barGlow)" class="bar-animate" style="animation-delay:0.45s;" />
+                        <text x="138" y="200" transform="rotate(90 138 200)" fill="#fff" font-size="7.5" font-family="Inter, sans-serif" opacity="0.95" text-anchor="end" font-weight="500">eBay</text>
+                        
+                        <rect x="158" y="90" width="8" height="110" rx="0.2" fill="url(#barBlue)" filter="url(#barGlow)" class="bar-animate" style="animation-delay:0.55s;" />
+                        <text x="168" y="200" transform="rotate(90 168 200)" fill="#fff" font-size="7.5" font-family="Inter, sans-serif" opacity="0.95" text-anchor="end" font-weight="500">Target</text>
+                        
+                        <rect x="188" y="50" width="8" height="150" rx="0.2" fill="url(#barBlue)" filter="url(#barGlow)" class="bar-animate" style="animation-delay:0.65s;" />
+                        <text x="198" y="200" transform="rotate(90 198 200)" fill="#fff" font-size="7.5" font-family="Inter, sans-serif" opacity="0.95" text-anchor="end" font-weight="500">Wayfair</text>
+
+                        <rect x="218" y="70" width="8" height="130" rx="0.2" fill="url(#barBlue)" filter="url(#barGlow)" class="bar-animate" style="animation-delay:0.75s;" />
+                        <text x="228" y="200" transform="rotate(90 228 200)" fill="#fff" font-size="7.5" font-family="Inter, sans-serif" opacity="0.95" text-anchor="end" font-weight="500">Best Buy</text>
+
+                        <rect x="248" y="85" width="8" height="115" rx="0.2" fill="url(#barBlue)" filter="url(#barGlow)" class="bar-animate" style="animation-delay:0.85s;" />
+                        <text x="258" y="200" transform="rotate(90 258 200)" fill="#fff" font-size="7.5" font-family="Inter, sans-serif" opacity="0.95" text-anchor="end" font-weight="500">Home Depot</text>
+
+                        <rect x="278" y="95" width="8" height="105" rx="0.2" fill="url(#barBlue)" filter="url(#barGlow)" class="bar-animate" style="animation-delay:0.95s;" />
+                        <text x="288" y="200" transform="rotate(90 288 200)" fill="#fff" font-size="7.5" font-family="Inter, sans-serif" opacity="0.95" text-anchor="end" font-weight="500">Lowe's</text>
+
+                        <rect x="308" y="65" width="8" height="135" rx="0.2" fill="url(#barBlue)" filter="url(#barGlow)" class="bar-animate" style="animation-delay:1.05s;" />
+                        <text x="318" y="200" transform="rotate(90 318 200)" fill="#fff" font-size="7.5" font-family="Inter, sans-serif" opacity="0.95" text-anchor="end" font-weight="500">Costco</text>
+
+                        <rect x="338" y="75" width="8" height="125" rx="0.2" fill="url(#barBlue)" filter="url(#barGlow)" class="bar-animate" style="animation-delay:1.15s;" />
+                        <text x="348" y="200" transform="rotate(90 348 200)" fill="#fff" font-size="7.5" font-family="Inter, sans-serif" opacity="0.95" text-anchor="end" font-weight="500">Macy's</text>
+
+                        <rect x="368" y="85" width="8" height="115" rx="0.2" fill="url(#barBlue)" filter="url(#barGlow)" class="bar-animate" style="animation-delay:1.25s;" />
+                        <text x="378" y="200" transform="rotate(90 378 200)" fill="#fff" font-size="7.5" font-family="Inter, sans-serif" opacity="0.95" text-anchor="end" font-weight="500">Nordstrom</text>
                     </g>
                 </svg>
             </div>
@@ -998,8 +1035,8 @@
             <div class="graph-container active" id="graph1" style="height: 160px; padding: 16px 16px 16px 0; display: flex; flex-direction: column; justify-content: center; align-items: flex-start;">
                 <div style="position: absolute; left: 0; bottom: 0; width: 100%; height: 10px; pointer-events: none; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 50%);"></div>
                 <div style="position: absolute; left: 0; top: 0; width: 10px; height: 100%; pointer-events: none; z-index: 10; background: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 50%);"></div>
-                <div class="graph-label" style="color: #fff;">Keywords</div>
-                <div style="display: flex; flex-wrap: wrap; gap: 4px 7px; margin: 16px 0 8px 8px; width: auto; max-width: 200px; justify-content: flex-start;">
+                <div class="graph-label" style="color: #fff;">Keyword Popularity</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 4px 7px; margin: 24px 0 8px 8px; width: auto; max-width: 200px; justify-content: flex-start;">
                   <span style="background: rgba(10,132,255,0.32); color: #fff; border-radius: 7px; padding: 1.5px 6px; font-size: 0.60rem; font-weight: 500; text-align: center;">Trending</span>
                   <span style="background: rgba(25,118,210,0.30); color: #fff; border-radius: 7px; padding: 1.5px 6px; font-size: 0.60rem; font-weight: 500; text-align: center;">Organic</span>
                   <span style="background: rgba(21,101,192,0.28); color: #fff; border-radius: 7px; padding: 1.5px 6px; font-size: 0.60rem; font-weight: 500; text-align: center;">Conversion Rate</span>
