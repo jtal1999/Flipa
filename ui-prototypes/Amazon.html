@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Screen 3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --background-color: #000000;
+            --card-background: #1A191D;
+            --text-primary: #F2F2F7;
+            --text-secondary: #8A8A8E;
+            --accent-green: #30D158;
+            --accent-blue: #0A84FF;
+            --accent-purple: #BF5AF2;
+            --icon-color: #8A8A8E;
+            --border-color: #2C2C2E;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding-top: 60px;
+            padding-bottom: 30px;
+        }
+        .phone-screen {
+            width: 390px;
+            height: 844px;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            border-radius: 50px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow:
+                0 15px 40px rgba(0,0,0,0.4),
+                0 0 0 6px #232323;
+            border: 3px solid #232323;
+        }
+        .iphone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 34px;
+            background-color: #000;
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+            z-index: 30;
+        }
+        .camera-dot {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle at 30% 30%, #2a2a2a, #1a1a1a);
+            border-radius: 50%;
+            z-index: 31;
+            box-shadow: inset 0 0 2px rgba(255,255,255,0.1);
+        }
+        .camera-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle at 30% 30%, #0f0f0f, #000000);
+            border-radius: 50%;
+            box-shadow: 0 0 1px rgba(255,255,255,0.2), inset 0 0 1px rgba(255,255,255,0.1);
+        }
+        .camera-dot::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            width: 3px;
+            height: 3px;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.15), transparent 70%);
+            border-radius: 50%;
+            z-index: 32;
+        }
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 44px;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-primary);
+            font-size: 11px;
+            font-weight: 300;
+            z-index: 25;
+        }
+        .status-bar-time {
+            flex: 1;
+            text-align: center;
+        }
+        .status-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: 10px;
+        }
+        .status-bar-right i {
+            font-size: 9px;
+            opacity: 0.95;
+        }
+        .battery-icon {
+            position: relative;
+            width: 18px;
+            height: 9px;
+            border: 1px solid var(--text-primary);
+            border-radius: 3px;
+            margin-left: 3px;
+            opacity: 0.95;
+        }
+        .battery-icon::after {
+            content: '';
+            position: absolute;
+            right: -3px;
+            top: 2px;
+            width: 2px;
+            height: 3px;
+            background-color: var(--text-primary);
+            border-radius: 0 1px 1px 0;
+        }
+        .battery-level {
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            bottom: 2px;
+            width: 60%;
+            background-color: var(--text-primary);
+            border-radius: 1px;
+        }
+        .corner-time {
+            position: absolute;
+            top: 15px;
+            left: 30px;
+            color: var(--text-primary);
+            font-size: 11px;
+            font-weight: 300;
+            z-index: 20;
+        }
+        .home-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 135px;
+            height: 5px;
+            background-color: #ffffff;
+            border-radius: 100px;
+            opacity: 0.3;
+            z-index: 1000;
+        }
+        .app-header {
+            position: absolute;
+            top: 44px;
+            left: 0;
+            right: 0;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px;
+            z-index: 40;
+        }
+        .header-left {
+            flex: 0 0 40px;
+            display: flex;
+            align-items: center;
+        }
+        .hamburger-btn {
+            background: none;
+            border: none;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 6px;
+            cursor: pointer;
+            padding: 0;
+        }
+        .hamburger-line {
+            display: block;
+            height: 3.2px;
+            background: #fff;
+            border-radius: 2px;
+        }
+        .hamburger-line.long {
+            width: 22px;
+        }
+        .hamburger-line.short {
+            width: 14px;
+        }
+        .header-center {
+            flex: 1;
+            text-align: center;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+            font-family: inherit;
+        }
+        .header-right {
+            flex: 0 0 70px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .signup-btn {
+            background: #fff;
+            color: #000;
+            font-weight: 700;
+            font-size: 1.08rem;
+            border: none;
+            border-radius: 14px;
+            padding: 6px 18px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .signup-btn:active {
+            background: #f2f2f2;
+        }
+        .main-content {
+            flex: 1 1 auto;
+            background: #000;
+            width: 100%;
+            min-height: 400px;
+            position: relative;
+        }
+        .bottom-bar {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 30px;
+            padding-bottom: 8px;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .ask-label {
+            width: 100%;
+            text-align: left;
+            padding: 0 22px 1px 30px;
+            margin-bottom: 110px;
+            font-size: 1.13rem;
+            font-weight: 600;
+            color: #d1d1d6;
+            margin-top: 18px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .ask-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #d1d1d6;
+            font-size: 1.13rem;
+            font-weight: 600;
+            font-family: inherit;
+            width: 180px;
+            padding: 0;
+            margin: 0;
+            caret-color: transparent;
+        }
+        .blinking-cursor {
+            display: inline-block;
+            width: 1ch;
+            animation: blink 1s steps(1) infinite;
+            color: #d1d1d6;
+            font-weight: 400;
+            transition: color 0.2s;
+        }
+        .blinking-cursor.blue {
+            color: #0A84FF;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        .suggestion-bar {
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 0 10px 10px 10px;
+        }
+        .suggestion-pill {
+            background: #222;
+            color: #fff;
+            border-radius: 16px;
+            padding: 10px 18px 10px 14px;
+            font-size: 1.08rem;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            max-width: 80vw;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        }
+        .suggestion-bold {
+            font-weight: 700;
+            font-size: 1.08rem;
+            margin-bottom: 2px;
+        }
+        .suggestion-desc {
+            font-weight: 400;
+            font-size: 0.98rem;
+            color: #ccc;
+            opacity: 0.85;
+            margin-top: -2px;
+        }
+        .input-icons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .icon-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.25rem;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.18s;
+            cursor: pointer;
+            position: relative;
+            gap: 6px;
+        }
+        .icon-btn:active {
+            background: #222;
+        }
+        .icon-btn span {
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.02rem;
+            margin-left: 4px;
+        }
+        .icon-btn-search {
+            margin-left: 28px;
+        }
+        .icon-btn-reason {
+            margin-left: 32px;
+        }
+        .icon-btn-mic {
+            margin-left: 32px;
+        }
+        .photo-carousel {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .photo-holder {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #222;
+            border: 2px dashed #444;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .photo-holder-square {
+            border-radius: 8px !important;
+        }
+        .photo-holder-square.active-blue {
+            border: 2px solid #0A84FF !important;
+            box-shadow: none !important;
+        }
+        @media (max-width: 400px) {
+            .phone-screen { width: 100vw; height: 100vh; border-radius: 0; }
+            .main-content { min-height: 200px; }
+        }
+        .toggle-images-row {
+            position: absolute;
+            left: 56%;
+            bottom: 54px;
+            transform: translateX(0%);
+            pointer-events: none;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .toggle-image-holder {
+            position: static;
+            left: auto;
+            bottom: auto;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #000;
+            border: 2px solid #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            opacity: 0;
+            transform: scale(0.7);
+            transition:
+                opacity 0.3s,
+                transform 0.4s cubic-bezier(.4,1.4,.6,1),
+                box-shadow 0.18s;
+        }
+        .toggle-image-holder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+            object-position: center 40%;
+        }
+        .toggle-images-row.show .toggle-image-holder {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .toggle-images-row.show {
+            pointer-events: auto;
+        }
+
+        .toggle-blur-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%;
+            z-index: 9;
+            background: rgba(20,20,20,0.32);
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+        .toggle-blur-bg.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .search-btn-pill {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: transparent;
+            color: #fff;
+            border: 1.5px solid #fff;
+            border-radius: 18px;
+            padding: 0 8px 0 8px;
+            height: 38px;
+            font-size: 0.93rem;
+            font-weight: 500;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            cursor: pointer;
+            transition: background 0.18s, border 0.18s, color 0.18s;
+            margin-left: 8px;
+            margin-right: 8px;
+        }
+        .search-btn-pill:active {
+            background: transparent;
+            border-color: #fff;
+        }
+        .search-btn-pill i {
+            font-size: 1.02rem;
+            margin-right: 4px;
+            color: #fff;
+        }
+        .search-btn-pill.active-blue {
+            border: 1.5px solid #0A84FF;
+            color: #fff;
+        }
+        .search-btn-pill.active-blue i {
+            color: #fff;
+        }
+        .waiting-on-data {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: .5rem;
+            font-weight: 600;
+            gap: 0px;
+            position: absolute;
+            left: 0; right: 0;
+            top: 115px;
+            transform: none;
+            width: 100%;
+            text-align: center;
+            user-select: none;
+            z-index: 100;
+            padding: 0;
+            margin: 0;
+            background: transparent;
+        }
+        .waiting-on-data svg {
+            width: 100%;
+            height: 200px;
+            display: block;
+            pointer-events: all;
+        }
+        .waiting-on-data i {
+            display: none;
+        }
+        .waiting-img {
+            width: 81px;
+            height: 81px;
+            margin-bottom: 2px;
+            object-fit: contain;
+            display: block;
+            filter: brightness(.7) saturate(5);
+        }
+        .selected-screenshot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #000;
+            border: 2px solid #222;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-top: 10px;
+            transition: transform 0.5s cubic-bezier(.4,1.4,.6,1);
+            cursor: pointer;
+        }
+        .selected-screenshot.has-image {
+            display: flex;
+        }
+        .selected-screenshot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+        }
+        .selected-screenshot.swing {
+            animation: swing-in 0.5s cubic-bezier(.4,1.4,.6,1);
+        }
+        @keyframes swing-in {
+            0% { transform: translateY(-80px) scale(0.7) rotate(-30deg); opacity: 0; }
+            60% { transform: translateY(10px) scale(1.1) rotate(10deg); opacity: 1; }
+            100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+        }
+        .graph-line {
+            cursor: pointer;
+            transition: stroke-width 0.2s, opacity 0.2s;
+        }
+        .graph-line:hover {
+            stroke-width: 2.5;
+            opacity: 1;
+        }
+        .graph-line.selected {
+            stroke-width: 2.5;
+            opacity: 1;
+            filter: url(#glow);
+        }
+        .graph-line.selected path {
+            stroke-width: 2.5;
+            opacity: 1;
+        }
+        .swipe-indicator {
+            display: none;
+        }
+        .swipe-line {
+            width: 30px;
+            height: 2px;
+            background: #0A84FF;
+            border-radius: 1px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .swipe-line.unfilled {
+            background: rgba(10, 132, 255, 0.3);
+        }
+        .swipe-line:hover {
+            opacity: 0.8;
+        }
+        .graph-container {
+            display: block;
+            width: 50%;
+            float: left;
+            background: linear-gradient(145deg, rgba(0, 102, 204, 0.4), rgba(0, 0, 0, 0.95));
+            padding: 8px;
+            box-sizing: border-box;
+            position: relative;
+            transform: perspective(1000px) rotateX(2deg);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 6px 6px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 8px;
+        }
+        .graph-container:first-child {
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            transform: perspective(1000px) rotateX(2deg) rotateY(-1deg);
+            background: linear-gradient(145deg, rgba(0, 102, 204, 0.4), rgba(0, 0, 0, 0.95));
+        }
+        .graph-container:last-child {
+            transform: perspective(1000px) rotateX(2deg) rotateY(1deg);
+            background: linear-gradient(145deg, rgba(0, 102, 204, 0.4), rgba(0, 0, 0, 0.95));
+        }
+        #graph3 {
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+            position: relative;
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: none;
+            border: 1px solid rgba(255,255,255,0.005);
+            box-shadow: inset 0 -1px 1px rgba(255,255,255,0.15);
+            overflow: hidden;
+            height: 150px;
+            background: linear-gradient(145deg, rgba(0, 102, 204, 0.4) 0%, rgba(0, 0, 0, 0.95) 100%);
+            padding: 0;
+        }
+        .circular-progress {
+            position: static;
+            width: 50px;
+            height: 50px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -28px;
+        }
+        .circ-progress-label {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 700;
+            pointer-events: none;
+            user-select: none;
+        }
+        .circular-progress svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        .circular-progress circle {
+            fill: none;
+            stroke-width: 3;
+        }
+        .circular-progress .bg {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+        .circular-progress .progress {
+            stroke: #fff;
+            stroke-width: 2;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s ease;
+            filter: drop-shadow(0 0 8px rgba(10, 132, 255, 0.5));
+        }
+        #graph4 {
+            display: none;
+        }
+        .graph-container:hover {
+            transform: perspective(1000px) rotateX(2deg) translateY(-2px);
+            box-shadow: 
+                0 15px 30px rgba(0, 0, 0, 0.4),
+                0 8px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.15);
+        }
+        .graph-container svg {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border-radius: 8px;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+        }
+        .virality-label {
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-left: 105px;
+            margin-top: -50px;
+            letter-spacing: 0.01em;
+            opacity: 0.92;
+            user-select: none;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+        .pill-boxes {
+            position: absolute;
+            right: 20px;
+            top: 70.5%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 5;
+        }
+        .pill-box {
+            width: 120px;
+            height: 32px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 16px;
+            box-shadow: 
+                inset 0 1px 1px rgba(255, 255, 255, 0.1),
+                0 1px 2px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.75rem;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            padding: 0 14px;
+            backdrop-filter: blur(10px);
+        }
+        .heart-icon, .comment-icon, .share-icon {
+            font-size: 0.85rem;
+            margin-right: 6px;
+            position: relative;
+            top: -1px;
+            display: inline-block;
+        }
+        .heart-icon {
+            color: #ff2d55;
+        }
+        .comment-icon {
+            color: #0A84FF;
+        }
+        .share-icon {
+            color: rgba(255, 255, 255, 0.6);
+            transform: rotate(0deg);
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+        .pill-value {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            font-size: 0.7rem;
+            letter-spacing: 0.02em;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .trend-arrow {
+            color: #0A84FF;
+            font-size: 0.75rem;
+            font-weight: 600;
+            position: relative;
+            top: -1px;
+            transform: rotate(-45deg);
+            display: inline-block;
+        }
+        .last-pill {
+            height: 50px;
+            background: rgba(0, 0, 0, 0.75);
+        }
+        .graph-label {
+            position: absolute;
+            top: 8px;
+            left: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.5rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            z-index: 5;
+        }
+        .bottom-pill-box {
+            position: absolute;
+            left: 20px;
+            bottom: 20px;
+            width: 100px;
+            height: 105px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 18px;
+            box-shadow: 
+                inset 0 1px 1px rgba(255, 255, 255, 0.1),
+                0 1px 2px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 5;
+            backdrop-filter: blur(10px);
+        }
+        .bottom-pill-label {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+        }
+        .bottom-pill-value {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .ai-chatgpt-text {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 470px;
+            margin: 0 auto;
+            width: 90%;
+            max-width: 340px;
+            color: #d1d1d6;
+            font-size: 1.08rem;
+            font-weight: 500;
+            line-height: 1.5;
+            z-index: 20;
+            opacity: 0;
+            transform: translateY(40px);
+            pointer-events: none;
+            transition: opacity 1.4s cubic-bezier(.4,1.4,.6,1), transform 1.4s cubic-bezier(.4,1.4,.6,1);
+            text-align: left;
+            background: none;
+        }
+        .ai-chatgpt-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .graph-container.active {
+            transform: perspective(1000px) rotateX(2deg) translateY(-2px);
+            box-shadow: 
+                0 15px 30px rgba(0, 0, 0, 0.4),
+                0 8px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.15);
+        }
+        .graph-container.active:hover {
+            transform: perspective(1000px) rotateX(2deg);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 6px 6px rgba(0, 0, 0, 0.2);
+        }
+        .graph-info-box {
+            position: absolute;
+            bottom: 10px;
+            left: 4px;
+            z-index: 20;
+            background: rgba(0,0,0,0.18);
+            border-radius: 5px;
+            padding: 1.5px 6px 1.5px 5px;
+            font-size: 0.68rem;
+            color: #d1d1d6;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+            display: flex;
+            align-items: center;
+            gap: 0.08em;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            margin-top: -5px;
+        }
+        .graph-info-label {
+            color: #b0b0b8;
+            font-weight: 400;
+            font-size: 0.75em;
+            margin-right: 2px;
+        }
+        .graph-info-value {
+            color: #e6e6ea;
+            font-weight: 500;
+            font-size: 0.82em;
+        }
+        .up-arrow {
+            color: #0A84FF;
+            font-size: 1em;
+            font-weight: 700;
+            margin-left: 2px;
+            vertical-align: middle;
+        }
+        #graph1, #graph2 {
+            height: 160px;
+        }
+        #graph1 svg, #graph2 svg {
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-screen">
+        <div class="toggle-blur-bg" id="toggle-blur-bg"></div>
+        <div class="waiting-on-data">
+            <div class="swipe-indicator">
+                <div class="swipe-line" id="indicator1"></div>
+                <div class="swipe-line unfilled" id="indicator2"></div>
+            </div>
+            <!-- Top Graph -->
+            <div class="graph-container active" id="graph3">
+                <div class="graph-label">Amazon Sales Volume</div>
+                <div class="graph-info-box" style="margin-top: -2px;">
+                    <span class="graph-info-label">Avg. Source</span> <span class="graph-info-value" id="avg-source-val">$0.00</span>
+                    <span class="graph-info-label" style="margin-left:10px;">Avg. Ship</span> <span class="graph-info-value" id="avg-ship-val">$0.00</span>
+                </div>
+                <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.18); border-radius: 5px; padding: 1.5px 6px 1.5px 5px; font-size: 0.68rem; color: #d1d1d6; font-weight: 500; letter-spacing: 0.01em; display: flex; align-items: center; gap: 0.08em; box-shadow: 0 2px 8px rgba(0,0,0,0.04); z-index: 20;">
+                    <span class="graph-info-label">Est. Margin</span> <span class="graph-info-value"><span id="est-margin-val">0%</span> <span class="up-arrow" style="color:#0A84FF;">&#8593;</span></span>
+                </div>
+                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 65px; pointer-events: none; z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);"></div>
+                <svg viewBox="0 0 390 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                    <!-- Gradient definitions -->
+                    <defs>
+                        <linearGradient id="lineGradient3" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#0A84FF;stop-opacity:0.2" />
+                            <stop offset="100%" style="stop-color:#0A84FF;stop-opacity:0.05" />
+                        </linearGradient>
+                        <filter id="glow3">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <!-- Realistic blue line graph -->
+                    <path d="M0,108 L30,102 L60,86 L90,98 L120,80 L150,95 L180,78 L210,90 L240,75 L270,90 L300,75 L330,60 L360,65 L390,70" 
+                          fill="none" 
+                          stroke="#0A84FF" 
+                          stroke-width="2" 
+                          stroke-linecap="round" 
+                          stroke-linejoin="round" 
+                          class="graph-line" 
+                          id="main-line-graph3" />
+                </svg>
+            </div>
+            <!-- First Graph -->
+            <div class="graph-container active" id="graph1">
+                <div class="graph-label">Competition</div>
+                <svg viewBox="0 0 390 160" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+                    <!-- Gradient definitions -->
+                    <defs>
+                        <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#0A84FF;stop-opacity:0.2" />
+                            <stop offset="100%" style="stop-color:#0A84FF;stop-opacity:0.05" />
+                        </linearGradient>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <mask id="fadeMask">
+                            <linearGradient id="fadeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:white;stop-opacity:1" />
+                                <stop offset="70%" style="stop-color:white;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:white;stop-opacity:0" />
+                            </linearGradient>
+                            <rect x="0" y="0" width="390" height="160" fill="url(#fadeGradient)" />
+                        </mask>
+                    </defs>
+                    
+                    <!-- Buy Box Changes: horizontal fill, stacked -->
+                    <text x="10" y="18" fill="rgba(255,255,255,0.92)" font-size="20" font-family="Inter, sans-serif" font-weight="600" text-anchor="start">Buy Box Changes</text>
+                    <rect id="buybox-bar-bg" x="10" y="39" width="340" height="12" fill="rgba(255,255,255,0.1)" rx="6" />
+                    <rect id="buybox-bar-fill" x="10" y="39" width="0" height="12" fill="white" rx="6" />
+                    <text id="buybox-value" x="350" y="65" fill="#b0b0b8" font-size="22" font-family="Inter, sans-serif" font-weight="600" text-anchor="end" alignment-baseline="middle">0</text>
+
+                    <!-- Price Variance: horizontal fill, stacked below with more spacing -->
+                    <text x="10" y="130" fill="rgba(255,255,255,0.92)" font-size="20" font-family="Inter, sans-serif" font-weight="600" text-anchor="start">Price Variance</text>
+                    <rect id="pricevar-bar-bg" x="10" y="151" width="340" height="12" fill="rgba(255,255,255,0.1)" rx="6" />
+                    <rect id="pricevar-bar-fill" x="10" y="151" width="0" height="12" fill="white" rx="6" />
+                    <text id="pricevar-value" x="350" y="177" fill="#b0b0b8" font-size="22" font-family="Inter, sans-serif" font-weight="600" text-anchor="end" alignment-baseline="middle">$0.00</text>
+                </svg>
+            </div>
+            <!-- Second Graph -->
+            <div class="graph-container active" id="graph2">
+                <div class="graph-label">Sales Rank vs. Reviews</div>
+                <div style="position: absolute; left: 0; bottom: 0; width: 100%; height: 3px; pointer-events: none; z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.95) 100%);"></div>
+                <svg viewBox="0 0 390 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                    <!-- Gradient definitions -->
+                    <defs>
+                        <linearGradient id="lineGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.18" />
+                            <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0.06" />
+                        </linearGradient>
+                        <linearGradient id="lineGradient2Blue" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#0A84FF;stop-opacity:0.18" />
+                            <stop offset="100%" style="stop-color:#0A84FF;stop-opacity:0.06" />
+                        </linearGradient>
+                        <filter id="glow2">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <mask id="fadeMask2">
+                            <linearGradient id="fadeGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:white;stop-opacity:1" />
+                                <stop offset="70%" style="stop-color:white;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:white;stop-opacity:0" />
+                            </linearGradient>
+                            <rect x="0" y="0" width="390" height="200" fill="url(#fadeGradient2)" />
+                        </mask>
+                    </defs>
+                    
+                    <!-- Blue area fill with mask (background) -->
+                    <path d="M0,80 H40 V60 H100 V170 H160 V90 H220 V180 H280 V100 H340 V160 H390 V200 H0 Z" 
+                          fill="url(#lineGradient2Blue)"
+                          mask="url(#fadeMask2)" />
+                    <!-- Blue buy box style line (background) -->
+                    <path d="M0,80 H40 V60 H100 V170 H160 V90 H220 V180 H280 V100 H340 V160 H390" 
+                          fill="none" 
+                          stroke="#0A84FF" 
+                          stroke-width="2.5"
+                          stroke-linecap="square"
+                          stroke-linejoin="miter"
+                          class="graph-line"
+                          id="buybox-line-blue" />
+                    <!-- Area fill with mask (white, foreground) -->
+                    <path d="M0,155 L60,140 L140,170 L200,135 L260,150 L320,145 L360,155 L390,140 L390,200 L0,200 Z" 
+                          fill="url(#lineGradient2)"
+                          mask="url(#fadeMask2)" />
+                    <!-- White line graph (foreground, smooth) -->
+                    <path d="M0,155 L60,140 L140,170 L200,135 L260,150 L320,145 L360,155 L390,140" 
+                          fill="none" 
+                          stroke="#FFFFFF" 
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="graph-line"
+                          id="buybox-line" />
+                </svg>
+            </div>
+        </div>
+        <div class="status-bar">
+            <div class="status-bar-time">9:09</div>
+            <div class="status-bar-right">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <div class="battery-icon">
+                    <div class="battery-level"></div>
+                </div>
+            </div>
+        </div>
+        <div class="iphone-notch"></div>
+        <div class="camera-dot"></div>
+        <div class="corner-time">9:09</div>
+        <!-- App Header -->
+        <div class="app-header">
+            <div class="header-left">
+                <button class="hamburger-btn" aria-label="Menu">
+                    <span class="hamburger-line long"></span>
+                    <span class="hamburger-line short"></span>
+                </button>
+            </div>
+            <div class="header-center" style="margin-right:40px;">GemsAI</div>
+        </div>
+        <!-- Main content area (empty/black) -->
+        <div class="main-content"></div>
+        <!-- Photo holder above Search anything -->
+        <div class="photo-holder photo-holder-square" id="main-photo-holder" style="margin: 0 0 18px 30px;">
+            <img src="tumbler-pink.jpg" alt="Tumbler Pink" style="width:100%;height:100%;object-fit:cover;border-radius:8px;" />
+        </div>
+        <!-- Ask anything label above bottom bar -->
+        <div class="ask-label">
+            <input class="ask-input" id="askInput" placeholder="" autocomplete="off" />
+        </div>
+        <!-- Bottom input bar -->
+        <div class="bottom-bar">
+            <div class="input-icons" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 18px;gap:10px;">
+                <div style="display:flex;align-items:center;gap:8px;position:relative;">
+                    <button class="icon-btn" id="toggle-btn"><i class="fa-solid fa-sliders"></i></button>
+                    <div id="selected-screenshot" class="selected-screenshot"></div>
+                    <div class="toggle-images-row" id="toggle-images-row">
+                        <div class="toggle-image-holder">
+                            <img src="untitled folder/Screenshot_2025-05-06_at_1.08.29_AM-removebg-preview.png" alt="img1" />
+                        </div>
+                        <div class="toggle-image-holder">
+                            <img src="untitled folder/Screenshot_2025-05-06_at_1.08.56_AM-removebg-preview.png" alt="img2" />
+                        </div>
+                        <div class="toggle-image-holder">
+                            <img src="untitled folder/Screenshot_2025-05-06_at_2.13.36_AM-removebg-preview.png" alt="img3" />
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <button class="icon-btn"><i class="fa-solid fa-waveform-lines"></i></button>
+                </div>
+                <button class="search-btn-pill" id="seek-btn">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>Search</span>
+                </button>
+            </div>
+        </div>
+        <div class="home-indicator"></div>
+        <div class="dashed-circle-corner"></div>
+        <div class="ai-chatgpt-text" id="aiChatText">
+            <span><b>UV Toothbrush Holders sold on Amazon show strong potential: Solid sales volume and positive reviews suggest demand and reliable margins.</b></span>
+        </div>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('toggle-btn');
+        const imagesRow = document.getElementById('toggle-images-row');
+        const blurBg = document.getElementById('toggle-blur-bg');
+        toggleBtn.addEventListener('click', function() {
+            imagesRow.classList.toggle('show');
+            blurBg.classList.toggle('show');
+        });
+
+        // Bulge on click
+        document.querySelectorAll('.toggle-image-holder').forEach(holder => {
+            holder.addEventListener('click', function() {
+                this.classList.toggle('selected');
+            });
+        });
+
+        // Electric blue highlight for main photo holder and Seek button
+        const mainPhotoHolder = document.getElementById('main-photo-holder');
+        const seekBtn = document.getElementById('seek-btn');
+        mainPhotoHolder.addEventListener('click', function() {
+            mainPhotoHolder.classList.toggle('active-blue');
+            seekBtn.classList.toggle('active-blue');
+        });
+
+        // Seek button blue on typing
+        const askInput = document.getElementById('askInput');
+        askInput.focus();
+        askInput.addEventListener('input', function() {
+            if (askInput.value.trim().length > 0) {
+                seekBtn.classList.add('active-blue');
+            } else {
+                seekBtn.classList.remove('active-blue');
+            }
+        });
+
+        // Screenshot swing to toggle button
+        document.querySelectorAll('.toggle-image-holder img').forEach(img => {
+            img.parentElement.addEventListener('click', function(e) {
+                e.stopPropagation();
+                imagesRow.classList.remove('show');
+                blurBg.classList.remove('show');
+                const selectedScreenshot = document.getElementById('selected-screenshot');
+                selectedScreenshot.innerHTML = `<img src="${img.src}" alt="Selected Screenshot" />`;
+                selectedScreenshot.classList.add('has-image');
+                selectedScreenshot.classList.remove('swing');
+                void selectedScreenshot.offsetWidth;
+                selectedScreenshot.classList.add('swing');
+            });
+        });
+
+        // Make selected screenshot clickable to clear it
+        const selectedScreenshot = document.getElementById('selected-screenshot');
+        selectedScreenshot.addEventListener('click', function() {
+            selectedScreenshot.classList.remove('has-image');
+            selectedScreenshot.innerHTML = '';
+        });
+
+        // Graph switching
+        const indicator1 = document.getElementById('indicator1');
+        const indicator2 = document.getElementById('indicator2');
+        const graph1 = document.getElementById('graph1');
+        const graph2 = document.getElementById('graph2');
+
+        function switchGraph(graphNumber) {
+            if (graphNumber === 1) {
+                graph1.classList.add('active');
+                graph2.classList.remove('active');
+                indicator1.classList.remove('unfilled');
+                indicator2.classList.add('unfilled');
+            } else {
+                graph1.classList.remove('active');
+                graph2.classList.add('active');
+                indicator1.classList.add('unfilled');
+                indicator2.classList.remove('unfilled');
+            }
+        }
+
+        indicator1.addEventListener('click', () => switchGraph(1));
+        indicator2.addEventListener('click', () => switchGraph(2));
+
+        // Animate AI chat text
+        setTimeout(function() {
+            document.getElementById('aiChatText').classList.add('visible');
+        }, 400);
+
+        // Animate circle number and progress bar
+        const targetNumber = 85;
+        const duration = 1200; // ms
+        const numberEl = document.getElementById('circleNumber');
+        const progressEl = document.getElementById('circleProgress');
+        let start = null;
+        function animateCircleBar(ts) {
+            if (!start) start = ts;
+            const elapsed = ts - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const currentNumber = Math.floor(progress * targetNumber);
+            numberEl.textContent = currentNumber;
+            // Animate stroke-dashoffset from 100 to 30
+            const dashoffset = 100 - (progress * (100 - 30));
+            progressEl.setAttribute('stroke-dashoffset', dashoffset);
+            if (progress < 1) {
+                requestAnimationFrame(animateCircleBar);
+            } else {
+                numberEl.textContent = targetNumber;
+                progressEl.setAttribute('stroke-dashoffset', 30);
+            }
+        }
+        requestAnimationFrame(animateCircleBar);
+
+        // Animate fill bars
+        setTimeout(function() {
+            document.querySelectorAll('.fill-bar').forEach(function(bar) {
+                bar.style.width = bar.getAttribute('data-width');
+            });
+        }, 200);
+
+        // Animate Buy Box Changes
+        const buyboxValue = document.getElementById('buybox-value');
+        const buyboxFill = document.getElementById('buybox-bar-fill');
+        const buyboxTarget = 14;
+        const buyboxFillTarget = 180; // final width in px
+        // Animate Price Variance
+        const pricevarValue = document.getElementById('pricevar-value');
+        const pricevarFill = document.getElementById('pricevar-bar-fill');
+        const pricevarTarget = 2.5;
+        const pricevarFillTarget = 90; // final width in px
+        // Animation settings (duration already declared above)
+        function animateNumber(el, from, to, isCurrency, cb) {
+            const start = performance.now();
+            function frame(now) {
+                const progress = Math.min((now - start) / duration, 1);
+                const value = from + (to - from) * progress;
+                el.textContent = isCurrency ? `$${value.toFixed(2)}` : Math.floor(value);
+                if (progress < 1) {
+                    requestAnimationFrame(frame);
+                } else if (cb) {
+                    cb();
+                }
+            }
+            requestAnimationFrame(frame);
+        }
+        function animateFill(el, to) {
+            const start = performance.now();
+            const from = 0;
+            function frame(now) {
+                const progress = Math.min((now - start) / duration, 1);
+                el.setAttribute('width', from + (to - from) * progress);
+                if (progress < 1) {
+                    requestAnimationFrame(frame);
+                }
+            }
+            requestAnimationFrame(frame);
+        }
+        animateNumber(buyboxValue, 0, buyboxTarget, false);
+        animateFill(buyboxFill, buyboxFillTarget);
+        animateNumber(pricevarValue, 0, pricevarTarget, true);
+        animateFill(pricevarFill, pricevarFillTarget);
+
+        // Animate Card 3 Numbers
+        function animateInfoNumber(el, from, to, isCurrency, isPercent) {
+            const start = performance.now();
+            function frame(now) {
+                const progress = Math.min((now - start) / duration, 1);
+                const value = from + (to - from) * progress;
+                if (isCurrency) {
+                    el.textContent = `$${value.toFixed(2)}`;
+                } else if (isPercent) {
+                    el.textContent = `${Math.floor(value)}% `;
+                } else {
+                    el.textContent = value.toFixed(2);
+                }
+                if (progress < 1) {
+                    requestAnimationFrame(frame);
+                }
+            }
+            requestAnimationFrame(frame);
+        }
+        animateInfoNumber(document.getElementById('avg-source-val'), 0, 3.5, true, false);
+        animateInfoNumber(document.getElementById('avg-ship-val'), 0, 2.5, true, false);
+        animateInfoNumber(document.getElementById('est-margin-val'), 0, 38, false, true);
+    });
+    </script>
+    <script>
+    // Toggle electric blue on dashed circle click
+    document.querySelector('.dashed-circle-corner').addEventListener('click', function() {
+        this.classList.toggle('active-blue');
+    });
+    </script>
+</body>
+</html> 

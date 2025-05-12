@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Prototype</title>
+    <title>Data Screen 2</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -288,7 +288,7 @@
             width: 180px;
             padding: 0;
             margin: 0;
-            caret-color: #0A84FF;
+            caret-color: transparent;
         }
         .blinking-cursor {
             display: inline-block;
@@ -386,7 +386,7 @@
             border-radius: 50%;
             background: #222;
             border: 2px dashed #444;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             margin: 0;
@@ -540,90 +540,6 @@
             display: block;
             filter: brightness(.7) saturate(5);
         }
-        .plus-blur-bg {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            width: 100%; height: 100%;
-            z-index: 9;
-            background: rgba(20,20,20,0.32);
-            backdrop-filter: blur(8px);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s;
-        }
-        .plus-blur-bg.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .plus-actions-row {
-            position: absolute;
-            left: 6%;
-            bottom: 92px;
-            transform: translateX(0%);
-            pointer-events: none;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-        .plus-actions-row.show {
-            pointer-events: auto;
-        }
-        .plus-action-holder {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #000;
-            border: 2px solid #222;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            opacity: 0;
-            transform: scale(0.7);
-            transition:
-                opacity 0.3s,
-                transform 0.4s cubic-bezier(.4,1.4,.6,1),
-                box-shadow 0.18s;
-            color: #fff;
-            font-size: 1.18rem;
-        }
-        .plus-actions-row.show .plus-action-holder {
-            opacity: 1;
-            transform: scale(1);
-        }
-        .plus-action-holder:active {
-            background: #181818;
-        }
-        #main-photo-holder {
-            opacity: 0;
-            pointer-events: none;
-            transform: translateY(-40px);
-            transition: opacity 0.3s, transform 0.4s cubic-bezier(.4,1.4,.6,1);
-        }
-        #main-photo-holder.show-photo-holder {
-            opacity: 1;
-            pointer-events: auto;
-            transform: translateY(0);
-        }
-        #plus-btn {
-            margin-bottom: 1px;
-        }
-        .dashed-circle-corner {
-            position: absolute;
-            top: 57px;
-            right: 24px;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: url('data:image/svg+xml;utf8,<svg width="38" height="38" xmlns="http://www.w3.org/2000/svg"><path d="M19 30 C19 30, 6 20, 6 12 C6 7, 12 4, 19 10 C26 4, 32 7, 32 12 C32 20, 19 30, 19 30Z" fill="none" stroke="white" stroke-width="2.5" stroke-dasharray="8,6"/></svg>') center/cover no-repeat;
-            z-index: 100;
-            cursor: pointer;
-        }
-        .dashed-circle-corner.active-blue {
-            background: url('data:image/svg+xml;utf8,<svg width="38" height="38" xmlns="http://www.w3.org/2000/svg"><path d="M19 30 C19 30, 6 20, 6 12 C6 7, 12 4, 19 10 C26 4, 32 7, 32 12 C32 20, 19 30, 19 30Z" fill="none" stroke="%230A84FF" stroke-width="2.5" stroke-dasharray="8,6"/></svg>') center/cover no-repeat;
-        }
         .selected-screenshot {
             width: 40px;
             height: 40px;
@@ -694,7 +610,7 @@
             display: block;
             width: 50%;
             float: left;
-            background: linear-gradient(145deg, #0a0a0a, #000000);
+            background: linear-gradient(145deg, rgba(255, 153, 0, 0.03), rgba(0, 0, 0, 0.95));
             padding: 8px;
             box-sizing: border-box;
             position: relative;
@@ -707,9 +623,11 @@
         .graph-container:first-child {
             border-right: 1px solid rgba(255, 255, 255, 0.1);
             transform: perspective(1000px) rotateX(2deg) rotateY(-1deg);
+            background: linear-gradient(145deg, rgba(0, 102, 204, 0.03), rgba(0, 0, 0, 0.95));
         }
         .graph-container:last-child {
             transform: perspective(1000px) rotateX(2deg) rotateY(1deg);
+            background: linear-gradient(145deg, rgba(255, 153, 0, 0.03), rgba(0, 0, 0, 0.95));
         }
         #graph3 {
             display: flex;
@@ -726,7 +644,7 @@
             box-shadow: inset 0 -1px 1px rgba(255,255,255,0.15);
             overflow: hidden;
             height: 150px;
-            background: linear-gradient(145deg, #18181c 0%, #000000 100%);
+            background: linear-gradient(145deg, rgba(0, 102, 204, 0.05) 0%, rgba(0, 0, 0, 0.95) 100%);
             padding: 16px;
         }
         .circular-progress {
@@ -952,11 +870,6 @@
 </head>
 <body>
     <div class="phone-screen">
-        <div class="plus-blur-bg" id="plus-blur-bg"></div>
-        <div class="plus-actions-row" id="plus-actions-row">
-            <button class="plus-action-holder"><i class="fa-solid fa-camera"></i></button>
-            <button class="plus-action-holder"><i class="fa-regular fa-image"></i></button>
-        </div>
         <div class="toggle-blur-bg" id="toggle-blur-bg"></div>
         <div class="waiting-on-data">
             <div class="swipe-indicator">
@@ -1161,13 +1074,12 @@
         </div>
         <!-- Ask anything label above bottom bar -->
         <div class="ask-label">
-            <input class="ask-input" id="askInput" placeholder="Type any product" autocomplete="off" />
+            <input class="ask-input" id="askInput" placeholder="" autocomplete="off" />
         </div>
         <!-- Bottom input bar -->
         <div class="bottom-bar">
             <div class="input-icons" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 18px;gap:10px;">
                 <div style="display:flex;align-items:center;gap:8px;position:relative;">
-                    <button class="icon-btn" id="plus-btn"><i class="fa-solid fa-plus"></i></button>
                     <button class="icon-btn" id="toggle-btn"><i class="fa-solid fa-sliders"></i></button>
                     <div id="selected-screenshot" class="selected-screenshot"></div>
                     <div class="toggle-images-row" id="toggle-images-row">
@@ -1192,7 +1104,6 @@
             </div>
         </div>
         <div class="home-indicator"></div>
-        <div class="dashed-circle-corner"></div>
         <div class="ai-chatgpt-text" id="aiChatText">
             <span><b>UV Toothbrush TikTok content reached <b>2.4M</b> people with engagement up <b>24 percent</b>. The average follower count is <b>45K</b>, showing strong interest.</b></span>
         </div>
@@ -1202,16 +1113,9 @@
         const toggleBtn = document.getElementById('toggle-btn');
         const imagesRow = document.getElementById('toggle-images-row');
         const blurBg = document.getElementById('toggle-blur-bg');
-        const plusBtn = document.getElementById('plus-btn');
-        const plusActionsRow = document.getElementById('plus-actions-row');
-        const plusBlurBg = document.getElementById('plus-blur-bg');
         toggleBtn.addEventListener('click', function() {
             imagesRow.classList.toggle('show');
             blurBg.classList.toggle('show');
-        });
-        plusBtn.addEventListener('click', function() {
-            plusActionsRow.classList.toggle('show');
-            plusBlurBg.classList.toggle('show');
         });
 
         // Bulge on click
@@ -1238,15 +1142,6 @@
             } else {
                 seekBtn.classList.remove('active-blue');
             }
-        });
-
-        // Show photo holder when camera roll icon is clicked
-        const cameraRollBtn = document.querySelector('.plus-action-holder i.fa-image').parentElement;
-        cameraRollBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            mainPhotoHolder.classList.toggle('show-photo-holder');
-            plusActionsRow.classList.remove('show');
-            plusBlurBg.classList.remove('show');
         });
 
         // Screenshot swing to toggle button
@@ -1329,12 +1224,6 @@
                 bar.style.width = bar.getAttribute('data-width');
             });
         }, 200);
-    });
-    </script>
-    <script>
-    // Toggle electric blue on dashed circle click
-    document.querySelector('.dashed-circle-corner').addEventListener('click', function() {
-        this.classList.toggle('active-blue');
     });
     </script>
 </body>
